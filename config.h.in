@@ -1,0 +1,2 @@
+/* Version */
+#define VERSION "@VERSION@"
