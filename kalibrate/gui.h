@@ -9,6 +9,12 @@
 #include <KMainWindow>
 #include <KActionCollection>
 
+#include "imagelist.h"
+
+class ImageListModel;
+class ImageDelegate;
+class QListView;
+
 class KalibrateGui : public KMainWindow // QWidget
 {
   Q_OBJECT;
@@ -33,6 +39,12 @@ protected:
 
 private:
   KActionCollection action_collection;
+  ImageListModel *imageModel;
+  ImageDelegate *imageDelegate;
+  QListView *theImageList;
+
+  // Daten
+  imageList images;
 };
 
 #endif

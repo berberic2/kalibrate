@@ -98,12 +98,12 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   QHBoxLayout *hbox = new QHBoxLayout(main_widget);
   QVBoxLayout *vbox = new QVBoxLayout();
   hbox->addLayout(vbox);
-  QListView *listview = new QListView();
-  ImageListModel *imageModel = new ImageListModel(this);
-  listview->setModel(imageModel);
-  ImageDelegate *imageDelegate = new ImageDelegate(this);
-  listview->setItemDelegate(imageDelegate);
-  vbox->addWidget(listview);
+  theImageList = new QListView();
+  imageModel = new ImageListModel(&images, this);
+  theImageList->setModel(imageModel);
+  imageDelegate = new ImageDelegate(this);
+  theImageList->setItemDelegate(imageDelegate);
+  vbox->addWidget(theImageList);
   QHBoxLayout *hbox2 = new QHBoxLayout();
   vbox->addLayout(hbox2);
   KPushButton *bt_load = new KPushButton("Load");
@@ -135,13 +135,16 @@ KalibrateGui::~KalibrateGui()
 
 void KalibrateGui::load_images()
 {
-  std::cout << "Hallo\n";
   QStringList files = KFileDialog::getOpenFileNames(KUrl(), 
 	image_mime_type, this);
   if (files.isEmpty()) return;
   for(QStringList::iterator i = files.begin(); i != files.end(); ++i) {
     std::cout << qPrintable(*i) << "\n";
+    images.push_back(*new ImageNode);
+    ImageNode &node = images.back();
+    node.set(*i);
   }
+  theImageList->reset();
 }
 
 void KalibrateGui::load()
