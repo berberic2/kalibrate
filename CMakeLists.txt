@@ -12,5 +12,5 @@ add_definitions(-Wall -g)
 # config.h
 configure_file(config.h.in config.h)
 
-subdirs(kalibrate) #  po doc
+subdirs(kalibrate doc) #  po doc
 
