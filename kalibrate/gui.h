@@ -14,6 +14,7 @@
 class ImageListModel;
 class ImageDelegate;
 class QListView;
+class ImageView;
 
 class KalibrateGui : public KMainWindow // QWidget
 {
@@ -42,6 +43,7 @@ private:
   ImageListModel *imageModel;
   ImageDelegate *imageDelegate;
   QListView *theImageList;
+  ImageView *theImageViewer;
 
   // Daten
   imageList images;

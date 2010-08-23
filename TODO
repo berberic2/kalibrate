@@ -1,0 +1,20 @@
+Bilder laden/erzuegen
+Schachbretter finden
+  Abmessungen angeben
+  Gitterpunkte berechnen
+Gitterpunkte
+  Gitterpunkte anzeigen
+Kalibrierung
+Resultate anzeigen/überprüfen
+Externe Kalibrierungen anziegen
+Abspeichern
+
+---------------------------------------------------------------------------
+
+⎛ 0.345626  1.567858  0.00000 ⎞     ⎛ 0.3567856 ⎞
+⎜ 0.000000  2342.789  238.898 ⎟ x + ⎜ 0.4567680 ⎟
+⎝ 0.000000  0.000000  234.776 ⎠     ⎝ 52.148441 ⎠
+
+
+radial: 0.34576457 x + 56.367 x² - 345.67 x³ + 4567.654 x⁴
+

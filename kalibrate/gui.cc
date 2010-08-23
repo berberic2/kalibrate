@@ -27,6 +27,7 @@
 #include <KFileDialog>
 
 #include "imagelist.h"
+#include "imageviewer.h"
 #include "gui.moc"
 
 /**
@@ -110,7 +111,8 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   hbox2->addWidget(bt_load);
   KPushButton *bt_add = new KPushButton("Add");
   hbox2->addWidget(bt_add);
-  hbox->addWidget(new QWidget(main_widget));
+  theImageViewer = new ImageView(this);
+  hbox->addWidget(theImageViewer);
 
   // signals
   connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
@@ -143,6 +145,7 @@ void KalibrateGui::load_images()
     images.push_back(*new ImageNode);
     ImageNode &node = images.back();
     node.set(*i);
+    theImageViewer->Image(&node.image);
   }
   theImageList->reset();
 }

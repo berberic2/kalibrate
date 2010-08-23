@@ -6,6 +6,7 @@ include_directories(${KDE4_INCLUDES})
 kde4_add_executable(kalibrate
   kalibrate.cc
   imagelist.cc
+  imageviewer.cc
   gui.cc
 )
 
