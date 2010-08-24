@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QFont>
+#include <QFileInfo>
 
 #include <KLocale>
 
@@ -24,7 +25,7 @@ void ImageNode::set(const QString &filename)
   points = 0;
   active = true;
   extrinsic = false;
-  name = (filename).toUtf8().data();
+  name = filename;
 }
 
 
@@ -98,7 +99,7 @@ QString ImageDelegate::genText(const ImageNode &node) const
     .arg(QStringFromBool(node.active))
     .arg(node.points)
     .arg(QStringFromBool(node.extrinsic))
-    .arg(QString::fromLocal8Bit(node.name.c_str()));
+    .arg(QFileInfo(node.name).fileName());
   return text;
 }
 
@@ -142,3 +143,17 @@ QSize ImageDelegate::sizeHint(const QStyleOptionViewItem &option,
   int h = qMax(textsize.height(), node->thumb.height()) + 4 ;
   return QSize(w, h);
 }
+
+/** 
+ * Constructor for convinience-wrapper-class ImageListView 
+ * 
+ * @param images list of images to display
+ * @param parent parent-widget
+ */
+ImageListView::ImageListView(const imageList *images, QWidget *parent) : 
+  theModel(images) 
+{
+  setModel(&theModel);
+  setItemDelegate(&theDelegate);
+}
+ 

@@ -7,7 +7,9 @@
 #define IMAGELIST_H
 
 #include <QAbstractItemDelegate>
+#include <QAbstractListModel>
 #include <QFontMetrics>
+#include <QListView>
 
 
 /**
@@ -20,7 +22,7 @@ struct ImageNode
   int points;			/**< number of points found */
   bool active;			/**< image is used for calibration */
   bool extrinsic;		/**< save extrinsic calibration */
-  std::string name;		/**< filename of the image */
+  QString name;			/**< filename of the image */
 
   void set(const QString &filename);
 };
@@ -36,7 +38,7 @@ class ImageListModel : public QAbstractListModel
   Q_OBJECT
 public:
   ImageListModel(QObject *parent = 0);
-  ImageListModel(imageList *i, QObject *parent = 0);
+  ImageListModel(const imageList *i, QObject *parent = 0);
 
   virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
   virtual QVariant data(const QModelIndex &index, 
@@ -46,7 +48,7 @@ public:
   void images(imageList *i) { theImages = i; }
 
 private:
-  imageList *theImages;
+  const imageList *theImages;
 };
 
 class ImageDelegate : public QAbstractItemDelegate
@@ -65,10 +67,19 @@ private:
   QString genText(const ImageNode &node) const;
 };
 
+class ImageListView : public QListView
+{
+public:
+  ImageListView(const imageList *images, QWidget *parent = 0);
+private:
+  ImageDelegate theDelegate;
+  ImageListModel theModel;
+};
+
 inline ImageListModel::ImageListModel(QObject *parent) : 
   QAbstractListModel(parent), theImages(0) {}
 
-inline ImageListModel::ImageListModel(imageList *i, QObject *parent) : 
+inline ImageListModel::ImageListModel(const imageList *i, QObject *parent) : 
   QAbstractListModel(parent), theImages(i) {}
 
 inline int ImageListModel::rowCount(const QModelIndex &parent) const 

@@ -8,6 +8,7 @@
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QSplitter>
 #include <QListView>
 #include <QAbstractListModel>
 #include <QAbstractItemDelegate>
@@ -93,17 +94,12 @@ KalibrateGui::KalibrateGui(QWidget *parent)
 #endif
 
   // build widgets
-  QWidget *main_widget = new QWidget(this);
-  setCentralWidget(main_widget);
-  
-  QHBoxLayout *hbox = new QHBoxLayout(main_widget);
-  QVBoxLayout *vbox = new QVBoxLayout();
-  hbox->addLayout(vbox);
-  theImageList = new QListView();
-  imageModel = new ImageListModel(&images, this);
-  theImageList->setModel(imageModel);
-  imageDelegate = new ImageDelegate(this);
-  theImageList->setItemDelegate(imageDelegate);
+  QSplitter *hsplitter = new QSplitter(this);
+  setCentralWidget(hsplitter);
+  QWidget *vboxw = new QWidget();
+  hsplitter->addWidget(vboxw);
+  QVBoxLayout *vbox = new QVBoxLayout(vboxw);
+  theImageList = new ImageListView(&images, this);
   vbox->addWidget(theImageList);
   QHBoxLayout *hbox2 = new QHBoxLayout();
   vbox->addLayout(hbox2);
@@ -112,7 +108,7 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   KPushButton *bt_add = new KPushButton("Add");
   hbox2->addWidget(bt_add);
   theImageViewer = new ImageView(this);
-  hbox->addWidget(theImageViewer);
+  hsplitter->addWidget(theImageViewer);
 
   // signals
   connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
@@ -145,7 +141,7 @@ void KalibrateGui::load_images()
     images.push_back(*new ImageNode);
     ImageNode &node = images.back();
     node.set(*i);
-    theImageViewer->Image(&node.image);
+    theImageViewer->imageWidget().image(&node.image);
   }
   theImageList->reset();
 }

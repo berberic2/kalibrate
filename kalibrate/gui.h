@@ -40,8 +40,6 @@ protected:
 
 private:
   KActionCollection action_collection;
-  ImageListModel *imageModel;
-  ImageDelegate *imageDelegate;
   QListView *theImageList;
   ImageView *theImageViewer;
 
