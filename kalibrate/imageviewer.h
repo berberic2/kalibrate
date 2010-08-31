@@ -28,7 +28,10 @@ class ImageView : public QScrollArea
 {
   Q_OBJECT;
 public:
-  ImageView(QWidget *parent = 0) : theImage(parent) { setWidget(&theImage); }
+  ImageView(QWidget *parent = 0) : theImage(parent) { 
+    setWidget(&theImage); 
+    setAlignment(Qt::AlignCenter);
+  }
   ImageWidget &imageWidget() { return theImage; }
   const ImageWidget &imageWidget() const { return theImage; }
 private:

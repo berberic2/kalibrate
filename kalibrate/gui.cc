@@ -58,7 +58,6 @@ static struct {
   { I18N_NOOP("Last Hour"),        "lastHour",   SLOT(last_hour()) },
 };
 
-
 /** 
  * Constructs a Kalibrate-Gui
  * 
@@ -96,9 +95,10 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   // build widgets
   QSplitter *hsplitter = new QSplitter(this);
   setCentralWidget(hsplitter);
-  QWidget *vboxw = new QWidget();
+  QWidget *vboxw = new QWidget(this);
   hsplitter->addWidget(vboxw);
   QVBoxLayout *vbox = new QVBoxLayout(vboxw);
+  //  vboxw->setLayout(vbox);
   theImageList = new ImageListView(&images, this);
   vbox->addWidget(theImageList);
   QHBoxLayout *hbox2 = new QHBoxLayout();
@@ -108,12 +108,13 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   KPushButton *bt_add = new KPushButton("Add");
   hbox2->addWidget(bt_add);
   theImageViewer = new ImageView(this);
+  theImageViewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   hsplitter->addWidget(theImageViewer);
 
   // signals
   connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
-  //connect(listview_,   SIGNAL(itemPressed(QTreeWidgetItem *, int)), 
-  //	SLOT(startDrag(QTreeWidgetItem *, int)));
+  connect(theImageList, SIGNAL(clicked(const QModelIndex &)), 
+	SLOT(imageSelected(const QModelIndex &)));
 
   // Menu
   KMenu *fileMenu = new KMenu(i18n("&File"));
@@ -169,6 +170,13 @@ void KalibrateGui::save()
     }
   }
   out.close();
+}
+
+void KalibrateGui::imageSelected(const QModelIndex &index)
+{
+  const ImageNode *node = index.data(Qt::DisplayRole).value<const ImageNode*>();
+  theImageViewer->imageWidget().image(&node->image);
+  std::cout << "click\n";
 }
 
 void KalibrateGui::saveProperties(KConfigGroup &conf)

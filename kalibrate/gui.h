@@ -33,6 +33,7 @@ public slots:
   virtual void load();
   virtual void save();
   virtual void load_images();
+  virtual void imageSelected(const QModelIndex & index);
 
 protected:
   virtual void saveProperties(KConfigGroup &);

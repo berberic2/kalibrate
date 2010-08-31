@@ -64,8 +64,8 @@ void ImageWidget::paintEvent(QPaintEvent * event)
 void ImageWidget::wheelEvent(QWheelEvent *event)
 {
   if(event->orientation() == Qt::Vertical) {
-    double s = theScale*pow(1.2, event->delta()/(15.0*8.0));
-    if (s > 0.1 || s < 10) {
+    double s = theScale*pow(M_SQRT2, event->delta()/(15.0*8.0));
+    if (s > 0.1 && s < 10) {
       scale(s);
       // ToDo set scroll so that center stays fixed
     }
