@@ -176,7 +176,6 @@ void KalibrateGui::imageSelected(const QModelIndex &index)
 {
   const ImageNode *node = index.data(Qt::DisplayRole).value<const ImageNode*>();
   theImageViewer->imageWidget().image(node->image);
-  std::cout << "click\n";
 }
 
 void KalibrateGui::saveProperties(KConfigGroup &conf)

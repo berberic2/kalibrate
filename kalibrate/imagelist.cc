@@ -95,11 +95,13 @@ QString ImageDelegate::QStringFromBool(bool b) const
  */
 QString ImageDelegate::genText(const ImageNode &node) const
 {
-  QString text = i18n("Grid: %1\nPoints: %2\nExtrinsic: %3\nName: %4")
+  QString text = i18n("Grid: %1\nPoints: %2\nExtrinsic: %3\nName: %4\nSize: %5×%6")
     .arg(QStringFromBool(node.active))
     .arg(node.points)
     .arg(QStringFromBool(node.extrinsic))
-    .arg(QFileInfo(node.name).fileName());
+    .arg(QFileInfo(node.name).fileName())
+    .arg(node.image.size().width())
+    .arg(node.image.size().height());
   return text;
 }
 
