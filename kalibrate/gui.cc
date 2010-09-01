@@ -139,10 +139,10 @@ void KalibrateGui::load_images()
   if (files.isEmpty()) return;
   for(QStringList::iterator i = files.begin(); i != files.end(); ++i) {
     std::cout << qPrintable(*i) << "\n";
-    images.push_back(*new ImageNode);
-    ImageNode &node = images.back();
+    ImageNode node;
     node.set(*i);
-    theImageViewer->imageWidget().image(&node.image);
+    images.push_back(node);
+    theImageViewer->imageWidget().image(node.image);
   }
   theImageList->reset();
 }
@@ -175,7 +175,7 @@ void KalibrateGui::save()
 void KalibrateGui::imageSelected(const QModelIndex &index)
 {
   const ImageNode *node = index.data(Qt::DisplayRole).value<const ImageNode*>();
-  theImageViewer->imageWidget().image(&node->image);
+  theImageViewer->imageWidget().image(node->image);
   std::cout << "click\n";
 }
 

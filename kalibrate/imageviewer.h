@@ -13,14 +13,15 @@ class ImageWidget : public QWidget
 {
 public:
   ImageWidget(QWidget *parent = 0);
-  void image(const QImage *i);
+  ImageWidget(const QImage &i, QWidget *parent = 0);
+  void image(const QImage &i);
 
   void scale(double s);
 protected:
   virtual void paintEvent(QPaintEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
 private:
-  const QImage *theImage;
+  QImage theImage;
   double theScale;
 };
 

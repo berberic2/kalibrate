@@ -12,14 +12,25 @@
 #include "imageviewer.h"
 
 
-/** 
+/**
  * constructor
- * 
+ *
  * @param parent parent-widget
  */
 ImageWidget::ImageWidget(QWidget *parent) :
-  theImage(0), theScale(1.0)
+  theScale(1.0)
 {
+}
+
+/**
+ * constructor
+ *
+ * @param parent parent-widget
+ */
+ImageWidget::ImageWidget(const QImage &i, QWidget *parent) :
+  theImage(i), theScale(1.0)
+{
+  update();
 }
 
 /** 
@@ -32,7 +43,7 @@ ImageWidget::ImageWidget(QWidget *parent) :
 void ImageWidget::scale(double s)
 {
   theScale = s;
-  QSize i = theImage->size();
+  QSize i = theImage.size();
   i *= theScale;
   setFixedSize(i);
 }
@@ -51,7 +62,7 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   painter.setRenderHint(QPainter::Antialiasing);
   painter.scale(theScale, theScale);
   // performance? buffer scaled image?
-  if (theImage) painter.drawImage(0, 0, *theImage);
+  painter.drawImage(0, 0, theImage);
 }
 
 /** 
@@ -75,13 +86,11 @@ void ImageWidget::wheelEvent(QWheelEvent *event)
 /** 
  * Set the image
  * 
- * Set the image that is displayed. The image does not get copied
- * so memory-management of the image is the job of the caller.
- * Consider it some kind of model-view-widget. 
+ * Set the image that is displayed. The image gets copied
  *
  * @param i 
  */
-void ImageWidget::image(const QImage *i) 
+void ImageWidget::image(const QImage &i) 
 { 
   theImage = i; 
   scale(theScale);
