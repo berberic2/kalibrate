@@ -1,3 +1,14 @@
+CMakeCache.txt
+CTestTestfile.cmake
+CMakeFiles
+CMakeTmp
+cmake_install.cmake
+cmake_uninstall.cmake
+Makefile
 BUILD
 *.bak
 *~
+*.moc
+*.files
+moc_*.cpp
+config.h
