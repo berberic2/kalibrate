@@ -14,6 +14,7 @@ target_link_libraries(kalibrate
   ${KDE4_KDEUI_LIBS} 
   ${KDE4_KIO_LIBS}
   ${KDE4_KTEXTEDITOR_LIBS}
+  cv
 )
 
 install(TARGETS kalibrate  ${INSTALL_TARGETS_DEFAULT_ARGS})

@@ -22,7 +22,6 @@ void ImageNode::set(const QString &filename)
 {
   image.load(filename);
   thumb = QPixmap::fromImage(image.scaledToWidth(150, Qt::SmoothTransformation));
-  points = 0;
   active = true;
   extrinsic = false;
   name = filename;
@@ -97,7 +96,7 @@ QString ImageDelegate::genText(const ImageNode &node) const
 {
   QString text = i18n("Grid: %1\nPoints: %2\nExtrinsic: %3\nName: %4\nSize: %5×%6")
     .arg(QStringFromBool(node.active))
-    .arg(node.points)
+    .arg(node.grid.points.size())
     .arg(QStringFromBool(node.extrinsic))
     .arg(QFileInfo(node.name).fileName())
     .arg(node.image.size().width())

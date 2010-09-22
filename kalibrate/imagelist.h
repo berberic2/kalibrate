@@ -6,23 +6,48 @@
 #ifndef IMAGELIST_H
 #define IMAGELIST_H
 
+#include <vector>
+
 #include <QAbstractItemDelegate>
 #include <QAbstractListModel>
 #include <QFontMetrics>
 #include <QListView>
 
+/**
+ * 2-dimensional point
+ */
+struct Point2
+{
+  double x, y;
+  
+  Point2() {}
+  Point2(double a, double b) : x(a), y(b) {}
+  void set(double a, double b) { x = a; y = b; }
+};
+
+/** 
+ * Grid-information 
+ */
+struct Grid
+{
+  std::vector<Point2> points;
+  bool rectangular;
+
+  bool isRectangular() { return rectangular; }
+  size_t size() { return points.size(); }
+};
 
 /**
- * Information structure for an Imaga
+ * Information structure for an Image
  */
 struct ImageNode
 {
   QImage image;			/**< image */
   QPixmap thumb;		/**< thumbnail of image */
-  int points;			/**< number of points found */
   bool active;			/**< image is used for calibration */
   bool extrinsic;		/**< save extrinsic calibration */
   QString name;			/**< filename of the image */
+  Grid grid; 		        /**< grid found in this image */
 
   void set(const QString &filename);
 };
