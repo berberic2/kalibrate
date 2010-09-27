@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QScrollArea>
 
+#include "imagelist.h"
 
 class QImage;
 
@@ -15,6 +16,7 @@ public:
   ImageWidget(QWidget *parent = 0);
   ImageWidget(const QImage &i, QWidget *parent = 0);
   void image(const QImage &i);
+  void grid(const Grid &g);
 
   void scale(double s);
 protected:
@@ -22,6 +24,7 @@ protected:
   virtual void wheelEvent(QWheelEvent *event);
 private:
   QImage theImage;
+  Grid theGrid;
   double theScale;
 };
 

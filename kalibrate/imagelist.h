@@ -8,10 +8,13 @@
 
 #include <vector>
 
+#include <cmath>
+
 #include <QAbstractItemDelegate>
 #include <QAbstractListModel>
 #include <QFontMetrics>
 #include <QListView>
+#include <QPointF>
 
 /**
  * 2-dimensional point
@@ -23,6 +26,11 @@ struct Point2
   Point2() {}
   Point2(double a, double b) : x(a), y(b) {}
   void set(double a, double b) { x = a; y = b; }
+  operator QPointF() const { return QPointF(x, y); } 
+  Point2 operator- (const Point2 &b) const { return Point2(x-b.x, y-b.y); } 
+  Point2 operator/ (double s) const { return Point2(x/s, y/s); }
+   Point2 operator* (double s) const { return Point2(x*s, y*s); }
+ double len() const { return sqrt(x*x+y*y); }
 };
 
 /** 
@@ -32,8 +40,12 @@ struct Grid
 {
   std::vector<Point2> points;
   bool rectangular;
+  int width, height;
+
+  typedef std::vector<Point2>::iterator pointiterator;
 
   bool isRectangular() { return rectangular; }
+  bool dimension(int w, int h) { rectangular = true; width = w; height = h; }
   size_t size() { return points.size(); }
 };
 

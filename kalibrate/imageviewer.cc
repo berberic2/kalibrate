@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QWheelEvent>
 
+#include "imagelist.h"
 #include "imageviewer.h"
 
 
@@ -61,8 +62,40 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
   painter.scale(theScale, theScale);
+  painter.translate(0.5, 0.5);
   // performance? buffer scaled image?
-  painter.drawImage(0, 0, theImage);
+  painter.drawImage(QPointF(-0.5, -0.5), theImage);
+
+  QPen p;
+  p.setWidth(2);
+
+  p.setColor("red");
+  painter.setPen(p);
+  foreach(Point2 i, theGrid.points) {
+    painter.drawEllipse(i, 5.0, 5.0);
+  }
+  painter.drawEllipse(theGrid.points[0], 9.0, 9.0);
+
+  if (theGrid.isRectangular()) {
+    p.setColor("yellow");
+    painter.setPen(p);
+    const int w = theGrid.width;
+    const int h = theGrid.height;
+    for(int y=1; y<w; ++y)
+      for(int x=0; x<w; ++x) {
+	Point2 &a = theGrid.points[y*w+x];
+	Point2 &b = theGrid.points[y*w+x-w];
+	Point2 d = (b-a)/(b-a).len()*7.0;
+	painter.drawLine(a+d, b-d);
+      }
+    for(int y=0; y<w; ++y)
+      for(int x=1; x<w; ++x) {
+	Point2 &a = theGrid.points[y*w+x];
+	Point2 &b = theGrid.points[y*w+x-1];
+      Point2 d = (b-a)/(b-a).len()*7.0;
+      painter.drawLine(a+d, b-d);
+      }
+  }
 }
 
 /** 
@@ -94,5 +127,18 @@ void ImageWidget::image(const QImage &i)
 { 
   theImage = i; 
   scale(theScale);
+  update(); 
+};
+
+/** 
+ * Set the grid
+ * 
+ * Set the grid that is displayed. The grid gets copied
+ *
+ * @param i 
+ */
+void ImageWidget::grid(const Grid &g) 
+{ 
+  theGrid = g; 
   update(); 
 };

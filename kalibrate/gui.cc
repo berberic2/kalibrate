@@ -33,6 +33,9 @@
 #include "imageviewer.h"
 #include "gui.moc"
 
+/** Plugin-System */
+#include "opencv.h"
+
 /**
  * the filepattern / mime-type for module-files
  */
@@ -132,33 +135,6 @@ KalibrateGui::~KalibrateGui()
 {
 }
 
-
-void extract(ImageNode &node, int pw, int ph)
-{
-  QImage &image = node.image;
-  int h = image.height();
-  int w = image.width();
-
-  IplImage img; 
-  cvInitImageHeader(&img, cvSize(w, h), IPL_DEPTH_8U, 1);
-  cvCreateData(&img);
-  for(int y=0; y<h; ++y)
-    for(int x=0; x<w; ++x)
-      img.imageData[y*img.widthStep+x] = qGray(image.pixel(x, y));
-
-  CvPoint2D32f points[pw*ph];
-  int corners = 0;
-  
-  cvFindChessboardCorners(&img, cvSize(pw, ph), points, &corners);
-
-  cvReleaseData(&img);
-
-  node.grid.points.resize(corners);
-  for(int i=0; i<corners; ++i)
-    node.grid.points[i].set(points[i].x, points[i].y);
-  std::cout << "  " << corners << "\n";
-}
-
 void KalibrateGui::load_images()
 {
   QStringList files = KFileDialog::getOpenFileNames(KUrl(), 
@@ -170,7 +146,7 @@ void KalibrateGui::load_images()
     node.set(*i);
     extract(node, 10, 10);
     images.push_back(node);
-    theImageViewer->imageWidget().image(node.image);
+    //    theImageViewer->imageWidget().image(node.image);
   }
   theImageList->reset();
 }
@@ -204,6 +180,7 @@ void KalibrateGui::imageSelected(const QModelIndex &index)
 {
   const ImageNode *node = index.data(Qt::DisplayRole).value<const ImageNode*>();
   theImageViewer->imageWidget().image(node->image);
+  theImageViewer->imageWidget().grid(node->grid);
 }
 
 void KalibrateGui::saveProperties(KConfigGroup &conf)
