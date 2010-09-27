@@ -64,18 +64,15 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   painter.scale(theScale, theScale);
   painter.translate(0.5, 0.5);
   // performance? buffer scaled image?
+  // draw image
   painter.drawImage(QPointF(-0.5, -0.5), theImage);
+
+  if (theGrid.points.size() == 0) return;
 
   QPen p;
   p.setWidth(2);
-
-  p.setColor("red");
-  painter.setPen(p);
-  foreach(Point2 i, theGrid.points) {
-    painter.drawEllipse(i, 5.0, 5.0);
-  }
-  painter.drawEllipse(theGrid.points[0], 9.0, 9.0);
-
+  
+  // if there is grid: draw it
   if (theGrid.isRectangular()) {
     p.setColor("yellow");
     painter.setPen(p);
@@ -96,6 +93,14 @@ void ImageWidget::paintEvent(QPaintEvent * event)
       painter.drawLine(a+d, b-d);
       }
   }
+
+  // draw points
+  p.setColor("red");
+  painter.setPen(p);
+  foreach(Point2 i, theGrid.points) {
+    painter.drawEllipse(i, 5.0, 5.0);
+  }
+  painter.drawEllipse(theGrid.points[0], 9.0, 9.0);
 }
 
 /** 

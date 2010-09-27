@@ -33,7 +33,11 @@ bool extract(ImageNode &node, int pw, int ph)
       //    std::cout << "  corners:" << corners << "\n";
     }
     node.grid.dimension(pw, ph);
+    node.active = true;
+    node.extrinsic = false;
   } else {
     node.grid.points.clear();
+    node.active = false;
+    node.extrinsic = false;
   }
 }

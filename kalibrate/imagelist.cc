@@ -22,7 +22,7 @@ void ImageNode::set(const QString &filename)
 {
   image.load(filename);
   thumb = QPixmap::fromImage(image.scaledToWidth(150, Qt::SmoothTransformation));
-  active = true;
+  active = false;
   extrinsic = false;
   name = filename;
 }

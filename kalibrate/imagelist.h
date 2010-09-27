@@ -29,8 +29,8 @@ struct Point2
   operator QPointF() const { return QPointF(x, y); } 
   Point2 operator- (const Point2 &b) const { return Point2(x-b.x, y-b.y); } 
   Point2 operator/ (double s) const { return Point2(x/s, y/s); }
-   Point2 operator* (double s) const { return Point2(x*s, y*s); }
- double len() const { return sqrt(x*x+y*y); }
+  Point2 operator* (double s) const { return Point2(x*s, y*s); }
+  double len() const { return sqrt(x*x+y*y); }
 };
 
 /** 
