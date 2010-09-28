@@ -49,10 +49,47 @@ void ImageWidget::scale(double s)
   setFixedSize(i);
 }
 
+inline QPointF toQP(const Point2 &p) { return QPointF(p.x, p.y); }
+
+static void drawAxisLabel(QPainter &painter, 
+      const Point2 &a, const Point2 &b, 
+      bool left, const char *label)
+{
+  Point2 d = normalize(b-a);
+  QRect r = QFontMetrics(painter.font()).boundingRect(label);
+  Point2 c;
+  
+  if (left) {
+    Point2 n(d.y, -d.x);
+    if (d.x > 0) 
+      if (d.y > 0) 
+	c = a+10.0*d+2.0*n+Point2(r.left(), -r.bottom()); 
+      else
+	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.bottom());
+    else
+      if (d.y > 0)
+	c = a+10.0*d+2.0*n+Point2(r.left(), -r.top());
+      else
+	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.top());
+  } else {
+    Point2 n(-d.y, d.x);
+    if (d.x > 0) 
+      if (d.y > 0) 
+	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.top()); 
+      else
+	c = a+10.0*d+2.0*n+Point2(r.left(), -r.top());
+    else
+      if (d.y > 0)
+	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.bottom());
+      else
+	c = a+10.0*d+2.0*n+Point2(r.left(), -r.bottom()); 
+  }
+  painter.drawText(toQP(c), label);
+}
+
 /** 
  * Paint the image
  * 
- *
  *
  * @param event 
  */
@@ -63,14 +100,15 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   painter.setRenderHint(QPainter::Antialiasing);
   painter.scale(theScale, theScale);
   painter.translate(0.5, 0.5);
-  // performance? buffer scaled image?
   // draw image
+  // TODO: performance? buffer scaled image?
   painter.drawImage(QPointF(-0.5, -0.5), theImage);
 
   if (theGrid.points.size() == 0) return;
 
   QPen p;
-  p.setWidth(2);
+  p.setWidthF(2.0/theScale);
+  const double radius = 5.0;
   
   // if there is grid: draw it
   if (theGrid.isRectangular()) {
@@ -80,27 +118,34 @@ void ImageWidget::paintEvent(QPaintEvent * event)
     const int h = theGrid.height;
     for(int y=1; y<w; ++y)
       for(int x=0; x<w; ++x) {
-	Point2 &a = theGrid.points[y*w+x];
-	Point2 &b = theGrid.points[y*w+x-w];
-	Point2 d = (b-a)/(b-a).len()*7.0;
-	painter.drawLine(a+d, b-d);
+	const Point2 &a = theGrid.points[y*w+x];
+	const Point2 &b = theGrid.points[y*w+x-w];
+	Point2 d = normalize(b-a)*radius;
+	painter.drawLine(toQP(a+d), toQP(b-d));
       }
     for(int y=0; y<w; ++y)
       for(int x=1; x<w; ++x) {
-	Point2 &a = theGrid.points[y*w+x];
-	Point2 &b = theGrid.points[y*w+x-1];
-      Point2 d = (b-a)/(b-a).len()*7.0;
-      painter.drawLine(a+d, b-d);
+	const Point2 &a = theGrid.points[y*w+x];
+	const Point2 &b = theGrid.points[y*w+x-1];
+	Point2 d = normalize(b-a)*radius;
+	painter.drawLine(toQP(a+d), toQP(b-d));
       }
+    // draw x/y markers
+    // TODO: bmg
+    p.setColor("red");
+    painter.setPen(p);
+    drawAxisLabel(painter, theGrid.points[0], theGrid.points[1], true, "x");
+    drawAxisLabel(painter, theGrid.points[0], theGrid.points[w], false, "y");
   }
 
   // draw points
   p.setColor("red");
   painter.setPen(p);
   foreach(Point2 i, theGrid.points) {
-    painter.drawEllipse(i, 5.0, 5.0);
+    painter.drawEllipse(toQP(i), radius, radius);
   }
-  painter.drawEllipse(theGrid.points[0], 9.0, 9.0);
+  painter.drawEllipse(toQP(theGrid.points[0]), radius+4, radius+4);
+
 }
 
 /** 

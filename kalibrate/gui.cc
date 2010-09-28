@@ -31,6 +31,7 @@
 
 #include "imagelist.h"
 #include "imageviewer.h"
+
 #include "gui.moc"
 
 /** Plugin-System */
