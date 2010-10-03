@@ -145,7 +145,11 @@ void KalibrateGui::load_images()
     std::cout << qPrintable(*i) << "\n";
     ImageNode node;
     node.set(*i);
-    extract(node, 10, 10);
+    { // ToDo
+      OpenCV cv;
+      cv.dimension(10, 10);
+      cv.extractPlate(node);
+    }
     images.push_back(node);
     //    theImageViewer->imageWidget().image(node.image);
   }
