@@ -34,6 +34,7 @@ OpenCVGui::OpenCVGui() :
   heightWidget = new QSpinBox(this);
   horizontalLayout->addWidget(heightWidget);
 
+  // connect actions to widgets
   connect(widthWidget, SIGNAL(valueChanged(int)), SLOT(widthChanged(int)));
   connect(heightWidget, SIGNAL(valueChanged(int)), SLOT(heightChanged(int)));
 }

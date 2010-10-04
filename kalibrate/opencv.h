@@ -12,6 +12,8 @@
 #include "kalib_plugin.h"
 
 /**
+ * The Gui for the OpenCV-Extractor.
+ *
  * this should be a subclass of OpenCV, but this is not possible with Qt :(
  * Error: Meta object features not supported for nested classes
  */
@@ -19,21 +21,24 @@ class OpenCVGui : public QWidget
 {
   Q_OBJECT
 public:
-  int width, height;
+  int width; //!< width of chessboard
+  int height; //!< height of chessboard
 
   OpenCVGui();
   ~OpenCVGui();
-  void dimension(int x, int y);
+
+  void dimension(int x, int y); //!< set dimension of chessboard manually
 
 private:
   QSpinBox *widthWidget, *heightWidget;
+
 private slots:
   void widthChanged(int i) { width = i; }
   void heightChanged(int i) { height = i; }
 };
 
 /**
- *
+ * Exctractor-class for the OpenCV chessboard-method.
  */
 class OpenCV : public Extractor {
 public:
@@ -41,6 +46,8 @@ public:
   ~OpenCV();
   QWidget *getParamGui();
   bool extractPlate(ImageNode &node) const;
+  std::string getName() { return "OpenCV Chessboard"; }
+
   void dimension(int x, int y);
 
 private:
