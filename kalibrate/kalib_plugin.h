@@ -4,7 +4,7 @@
 
 #include <QWidget>
 
-class Extractor : public QObject
+class Extractor
 {
 public:
   virtual QWidget *getParamGui() = 0;

@@ -15,8 +15,35 @@
 #include "imagelist.h"
 #include "opencv.h"
 
+OpenCVGui::OpenCVGui() :
+  width(11), height(11)
+{
+  // Widget
+  QFormLayout *formLayout = new QFormLayout(this);
+
+  // Label
+  QLabel *label = new QLabel(i18n("Chessboard-size:"), this);
+  formLayout->setWidget(0, QFormLayout::LabelRole, label);
+
+  // w×h Eingabe
+  QHBoxLayout *horizontalLayout = new QHBoxLayout();
+  widthWidget = new QSpinBox(this);
+  horizontalLayout->addWidget(widthWidget);
+  QLabel *labelx = new QLabel(QString::fromUtf8("×"), this);
+  horizontalLayout->addWidget(labelx);
+  heightWidget = new QSpinBox(this);
+  horizontalLayout->addWidget(heightWidget);
+
+  connect(widthWidget, SIGNAL(valueChanged(int)), SLOT(widthChanged(int)));
+  connect(heightWidget, SIGNAL(valueChanged(int)), SLOT(heightChanged(int)));
+}
+
+OpenCVGui::~OpenCVGui()
+{
+}
+
 OpenCV::OpenCV() :
-  theGui(0), theWidth(11), theHeight(11)
+  theGui(0)
 {
 }
 
@@ -28,6 +55,8 @@ OpenCV::~OpenCV()
 
 bool OpenCV::extractPlate(ImageNode &node) const
 {
+  if (!theGui) return false;
+
   QImage &image = node.image;
   int h = image.height();
   int w = image.width();
@@ -39,10 +68,10 @@ bool OpenCV::extractPlate(ImageNode &node) const
     for(int x=0; x<w; ++x)
       img.imageData[y*img.widthStep+x] = qGray(image.pixel(x, y));
 
-  CvPoint2D32f points[theWidth*theHeight];
+  CvPoint2D32f points[theGui->width*theGui->height];
   int corners = 0;
 
-  int r = cvFindChessboardCorners(&img, cvSize(theWidth, theHeight), points, &corners);
+  int r = cvFindChessboardCorners(&img, cvSize(theGui->width, theGui->height), points, &corners);
 
   cvReleaseData(&img);
 
@@ -52,36 +81,32 @@ bool OpenCV::extractPlate(ImageNode &node) const
       node.grid.points[i].set(points[i].x, points[i].y);
       //    std::cout << "  corners:" << corners << "\n";
     }
-    node.grid.dimension(theWidth, theHeight);
+    node.grid.dimension(theGui->width, theGui->height);
     node.active = true;
     node.extrinsic = false;
+    return true;
   } else {
     node.grid.points.clear();
     node.active = false;
     node.extrinsic = false;
+    return false;
   }
 }
 
-void OpenCV::setupGui()
+void OpenCV::dimension(int x, int y)
 {
-  if (theGui) return;
-
-  // Widget
-  theGui = new QWidget();
-  QFormLayout *formLayout = new QFormLayout(theGui);
-
-  // Label
-  QLabel *label = new QLabel(i18n("Chessboard-size:"), theGui);
-  formLayout->setWidget(0, QFormLayout::LabelRole, label);
-
-  // w×h Eingabe
-  QHBoxLayout *horizontalLayout = new QHBoxLayout();
-  widthWidget = new QSpinBox(theGui);
-  horizontalLayout->addWidget(widthWidget);
-  QLabel *labelx = new QLabel(QString::fromUtf8("×"), theGui);
-  horizontalLayout->addWidget(labelx);
-  heightWidget = new QSpinBox(theGui);
-  horizontalLayout->addWidget(heightWidget);
-
-  connect(widthWidget, SIGNAL(valueChanged(int)), SLOT(widthChanged(int)));
+  if (!theGui) 
+    theGui = new OpenCVGui;
+  theGui->dimension(x, y);
 }
+
+void OpenCVGui::dimension(int x, int y)
+{
+  width = x; 
+  height = y;
+  widthWidget->setValue(width);
+  heightWidget->setValue(height);
+}
+
+
+
