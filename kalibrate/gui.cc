@@ -64,9 +64,9 @@ static struct {
   { I18N_NOOP("Last Hour"),        "lastHour",   SLOT(last_hour()) },
 };
 
-/** 
+/**
  * Constructs a Kalibrate-Gui
- * 
+ *
  * @param parent parent-widget see KMainWindow
  */
 KalibrateGui::KalibrateGui(QWidget *parent)
@@ -74,7 +74,7 @@ KalibrateGui::KalibrateGui(QWidget *parent)
 {
   // standard_actions
   for (size_t i=0; i< sizeof(standard_actions)/sizeof(*standard_actions); ++i)
-    actionCollection()->addAction(standard_actions[i].actionType, 
+    actionCollection()->addAction(standard_actions[i].actionType,
 	  standard_actions[i].name, this, standard_actions[i].slot);
   // TODO:
 #if 0
@@ -117,7 +117,7 @@ KalibrateGui::KalibrateGui(QWidget *parent)
 
   // signals
   connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
-  connect(theImageList, SIGNAL(clicked(const QModelIndex &)), 
+  connect(theImageList, SIGNAL(clicked(const QModelIndex &)),
   	SLOT(imageSelected(const QModelIndex &)));
 
   // Menu
@@ -127,7 +127,7 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   fileMenu->addAction(actionCollection()->action("save"));
   fileMenu->addSeparator();
   fileMenu->addAction(actionCollection()->action("quit"));
-  
+
   menuBar()->addMenu(helpMenu());
 
 }
@@ -138,17 +138,30 @@ KalibrateGui::~KalibrateGui()
 
 void KalibrateGui::load_images()
 {
-  QStringList files = KFileDialog::getOpenFileNames(KUrl(), 
+  QStringList files = KFileDialog::getOpenFileNames(KUrl(),
 	image_mime_type, this);
   if (files.isEmpty()) return;
   for(QStringList::iterator i = files.begin(); i != files.end(); ++i) {
     std::cout << qPrintable(*i) << "\n";
     ImageNode node;
     node.set(*i);
-    { // ToDo
-      OpenCV cv;
+    try { // ToDo
+      OpenCVExtractor cv;
       cv.dimension(10, 10);
-      cv.extractPlate(node);
+      if(cv(node.image, node.grid)){
+	node.active = true;
+	node.extrinsic = false;
+      } else {
+	node.active = false;
+	node.extrinsic = false;
+      }
+    }
+    catch(...) {
+      node.grid.points.clear();
+      node.active = false;
+      node.extrinsic = false;
+      KMessageBox::sorry(this,
+	    i18n("Could not find a grid or points in ‘%1’\n", *i));
     }
     images.push_back(node);
     //    theImageViewer->imageWidget().image(node.image);
@@ -158,20 +171,20 @@ void KalibrateGui::load_images()
 
 void KalibrateGui::load()
 {
-  QString file = KFileDialog::getOpenFileName(KUrl(), 
+  QString file = KFileDialog::getOpenFileName(KUrl(),
 	file_mime_type, this);
   if (file.isEmpty()) return;
 }
 
 void KalibrateGui::save()
 {
-  QString file = KFileDialog::getSaveFileName(KUrl(), 
+  QString file = KFileDialog::getSaveFileName(KUrl(),
 	file_mime_type, this);
   if (file.isEmpty()) return;
 
   QFile out(file);
   if (out.exists()) {
-    int answer = KMessageBox::questionYesNo(this, 
+    int answer = KMessageBox::questionYesNo(this,
 	  i18n("file ‘%1’ allready exists.\n"
 		"Do you want to overwrite it?", file));
     if (answer != KMessageBox::Yes) {

@@ -18,22 +18,7 @@
 #include <QPointF>
 
 #include "linear.h"
-
-/** 
- * Grid-information 
- */
-struct Grid
-{
-  std::vector<Point2> points;
-  bool rectangular;
-  int width, height;
-
-  typedef std::vector<Point2>::iterator pointiterator;
-
-  bool isRectangular() { return rectangular; }
-  bool dimension(int w, int h) { rectangular = true; width = w; height = h; }
-  size_t size() { return points.size(); }
-};
+#include "kalib_plugin.h"
 
 /**
  * Information structure for an Image
@@ -45,7 +30,7 @@ struct ImageNode
   bool active;			/**< image is used for calibration */
   bool extrinsic;		/**< save extrinsic calibration */
   QString name;			/**< filename of the image */
-  Grid grid; 		        /**< grid found in this image */
+  Plate grid; 		        /**< grid found in this image */
 
   void set(const QString &filename);
 };

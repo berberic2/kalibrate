@@ -17,15 +17,15 @@
  * this should be a subclass of OpenCV, but this is not possible with Qt :(
  * Error: Meta object features not supported for nested classes
  */
-class OpenCVGui : public QWidget
+class OpenCVExtractorGui : public QWidget
 {
   Q_OBJECT
 public:
   int width; //!< width of chessboard
   int height; //!< height of chessboard
 
-  OpenCVGui();
-  ~OpenCVGui();
+  OpenCVExtractorGui();
+  ~OpenCVExtractorGui();
 
   void dimension(int x, int y); //!< set dimension of chessboard manually
 
@@ -40,24 +40,24 @@ private slots:
 /**
  * Exctractor-class for the OpenCV chessboard-method.
  */
-class OpenCV : public Extractor {
+class OpenCVExtractor : public Extractor {
 public:
-  OpenCV();
-  ~OpenCV();
+  OpenCVExtractor();
+  ~OpenCVExtractor();
   QWidget *getParamGui();
-  bool extractPlate(ImageNode &node) const;
+  bool operator() (const QImage &node, Plate &grid) const;
   std::string getName() { return "OpenCV Chessboard"; }
 
   void dimension(int x, int y);
 
 private:
-  OpenCVGui *theGui;
+  OpenCVExtractorGui *theGui;
 };
 
-inline QWidget *OpenCV::getParamGui()
+inline QWidget *OpenCVExtractor::getParamGui()
 {
   if(!theGui) 
-    theGui = new OpenCVGui;
+    theGui = new OpenCVExtractorGui;
   return theGui;
 }
 

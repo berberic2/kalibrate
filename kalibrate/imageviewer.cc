@@ -21,6 +21,7 @@
 ImageWidget::ImageWidget(QWidget *parent) :
   theScale(1.0)
 {
+  setFixedSize(QSize(800, 600));
 }
 
 /**
@@ -34,12 +35,12 @@ ImageWidget::ImageWidget(const QImage &i, QWidget *parent) :
   update();
 }
 
-/** 
+/**
  * Set zoom/scale
- * 
+ *
  * Set the scale-parameter for the widgets painter
  *
- * @param s 
+ * @param s
  */
 void ImageWidget::scale(double s)
 {
@@ -50,20 +51,20 @@ void ImageWidget::scale(double s)
 }
 
 inline QPointF toQP(const Point2 &p) { return QPointF(p.x, p.y); }
-
-static void drawAxisLabel(QPainter &painter, 
-      const Point2 &a, const Point2 &b, 
+#if 0
+static void drawAxisLabel(QPainter &painter,
+      const Point2 &a, const Point2 &b,
       bool left, const char *label)
 {
   Point2 d = normalize(b-a);
   QRect r = QFontMetrics(painter.font()).boundingRect(label);
   Point2 c;
-  
+
   if (left) {
     Point2 n(d.y, -d.x);
-    if (d.x > 0) 
-      if (d.y > 0) 
-	c = a+10.0*d+2.0*n+Point2(r.left(), -r.bottom()); 
+    if (d.x > 0)
+      if (d.y > 0)
+	c = a+10.0*d+2.0*n+Point2(r.left(), -r.bottom());
       else
 	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.bottom());
     else
@@ -73,25 +74,66 @@ static void drawAxisLabel(QPainter &painter,
 	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.top());
   } else {
     Point2 n(-d.y, d.x);
-    if (d.x > 0) 
-      if (d.y > 0) 
-	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.top()); 
+    if (d.x > 0)
+      if (d.y > 0)
+	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.top());
       else
 	c = a+10.0*d+2.0*n+Point2(r.left(), -r.top());
     else
       if (d.y > 0)
 	c = a+10.0*d+2.0*n+Point2(-r.right(), -r.bottom());
       else
-	c = a+10.0*d+2.0*n+Point2(r.left(), -r.bottom()); 
+	c = a+10.0*d+2.0*n+Point2(r.left(), -r.bottom());
   }
   painter.drawText(toQP(c), label);
 }
+#else
+void ImageWidget::drawAxisLabel(QPainter &painter,
+      const Point2 &a, const Point2 &b,
+      bool left, const char *label)
+{
+  Point2 m = (b+a)/2;
+  Point2 d = normalize(b-a);
+  QRectF r = QFontMetricsF(painter.font()).boundingRect(label[0]);
+  Point2 size(r.right()-r.left(),r.bottom()-r.top());
+  Point2 c;
 
-/** 
+  if (d.x > 0) {
+    if (d.y > 0) {
+      c = m + Point2(2*d.x,0.6*d.y*size.y);
+    } else {
+      c = m + Point2(2*d.x,2*d.y);
+    }
+  } else {
+    if (d.y > 0) {
+      c = m + Point2(d.x*(2+size.x),0) + Point2(0,0.6*d.y*size.y);
+    } else {
+      c = m + Point2(d.x*(2+size.x),2*d.y);
+    }
+  }
+  const double angle = 2.8797933;
+  const double cosa = cos(angle);
+  const double sina = sin(angle);
+  Point2 e1(cosa*d.x - sina*d.y, sina*d.x + cosa*d.y);
+  Point2 e2(cosa*d.x + sina*d.y, -sina*d.x + cosa*d.y);
+  QPointF arrow[3];
+  arrow[0] = toQP(m);
+  arrow[1] = toQP(m+e1*8);
+  arrow[2] = toQP(m+e2*8);
+  painter.drawLine(toQP(a), toQP(m));
+  painter.save();
+  painter.setBrush(QBrush(painter.pen().color(), Qt::SolidPattern));
+  painter.drawPolygon(arrow, 3);
+  painter.restore();
+  painter.drawText(toQP(c), label);
+}
+#endif
+
+/**
  * Paint the image
- * 
  *
- * @param event 
+ *
+ * @param event
  */
 void ImageWidget::paintEvent(QPaintEvent * event)
 {
@@ -100,6 +142,7 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   painter.setRenderHint(QPainter::Antialiasing);
   painter.scale(theScale, theScale);
   painter.translate(0.5, 0.5);
+#if 1
   // draw image
   // TODO: performance? buffer scaled image?
   painter.drawImage(QPointF(-0.5, -0.5), theImage);
@@ -109,7 +152,7 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   QPen p;
   p.setWidthF(2.0/theScale);
   const double radius = 5.0;
-  
+
   // if there is grid: draw it
   if (theGrid.isRectangular()) {
     p.setColor("yellow");
@@ -136,6 +179,8 @@ void ImageWidget::paintEvent(QPaintEvent * event)
     painter.setPen(p);
     drawAxisLabel(painter, theGrid.points[0], theGrid.points[1], true, "x");
     drawAxisLabel(painter, theGrid.points[0], theGrid.points[w], false, "y");
+    //drawArrow(painter, theGrid.points[0], theGrid.points[1]);
+    //drawArrow(painter, theGrid.points[0], theGrid.points[w]);
   }
 
   // draw points
@@ -145,15 +190,25 @@ void ImageWidget::paintEvent(QPaintEvent * event)
     painter.drawEllipse(toQP(i), radius, radius);
   }
   painter.drawEllipse(toQP(theGrid.points[0]), radius+4, radius+4);
-
+#else
+  QPen p;
+  p.setWidthF(2.0/theScale);
+  painter.setPen(p);
+  for(double w=0; w<2*M_PI; w+=M_PI/40) {
+    Point2 a(300+200*sin(w), 300+200*cos(w));
+    Point2 b(300+250*sin(w), 300+250*cos(w));
+    painter.drawLine(toQP(a), toQP(b));
+    drawAxisLabel(painter, a, b, true, "x");
+  }
+#endif
 }
 
-/** 
+/**
  * Handle wheel-events
- * 
+ *
  * Wheel allows to zooms in/out (changes the scale)
  *
- * @param event 
+ * @param event
  */
 void ImageWidget::wheelEvent(QWheelEvent *event)
 {
@@ -166,29 +221,29 @@ void ImageWidget::wheelEvent(QWheelEvent *event)
   }
 }
 
-/** 
+/**
  * Set the image
- * 
+ *
  * Set the image that is displayed. The image gets copied
  *
- * @param i 
+ * @param i
  */
-void ImageWidget::image(const QImage &i) 
-{ 
-  theImage = i; 
+void ImageWidget::image(const QImage &i)
+{
+  theImage = i;
   scale(theScale);
-  update(); 
+  update();
 };
 
-/** 
+/**
  * Set the grid
- * 
+ *
  * Set the grid that is displayed. The grid gets copied
  *
- * @param i 
+ * @param i
  */
-void ImageWidget::grid(const Grid &g) 
-{ 
-  theGrid = g; 
-  update(); 
+void ImageWidget::grid(const Plate &g)
+{
+  theGrid = g;
+  update();
 };

@@ -15,7 +15,7 @@
 #include "imagelist.h"
 #include "opencv.h"
 
-OpenCVGui::OpenCVGui() :
+OpenCVExtractorGui::OpenCVExtractorGui() :
   width(11), height(11)
 {
   // Widget
@@ -39,71 +39,78 @@ OpenCVGui::OpenCVGui() :
   connect(heightWidget, SIGNAL(valueChanged(int)), SLOT(heightChanged(int)));
 }
 
-OpenCVGui::~OpenCVGui()
+OpenCVExtractorGui::~OpenCVExtractorGui()
 {
 }
 
-OpenCV::OpenCV() :
+OpenCVExtractor::OpenCVExtractor() :
   theGui(0)
 {
 }
 
-OpenCV::~OpenCV()
+OpenCVExtractor::~OpenCVExtractor()
 {
   if (theGui)
     delete theGui;
 }
 
-bool OpenCV::extractPlate(ImageNode &node) const
+/**
+ * Does the extraction of a grid from image.
+ *
+ * Extract a grid from the image using OpenCVs @a cvFindChessboardCorners
+ * and @a cvFindCornerSubPix functions.
+ *
+ * @param image @a Qimage from which points/grid are extracted
+ * @param grid reference to a @a Plate that is filled with the points/grid
+ * @return true if a grid was found, false otherwise
+ */
+bool OpenCVExtractor::operator() (const QImage &image, Plate &grid) const
 {
   if (!theGui) return false;
 
-  QImage &image = node.image;
   int h = image.height();
   int w = image.width();
 
-  IplImage img;
-  cvInitImageHeader(&img, cvSize(w, h), IPL_DEPTH_8U, 1);
-  cvCreateData(&img);
+  // create and copy image → IplImage
+  cv::Ptr<IplImage> img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1);
   for(int y=0; y<h; ++y)
     for(int x=0; x<w; ++x)
-      img.imageData[y*img.widthStep+x] = qGray(image.pixel(x, y));
+      img->imageData[y*img->widthStep+x] = qGray(image.pixel(x, y));
 
+  // find chessboard
   CvPoint2D32f points[theGui->width*theGui->height];
   int corners = 0;
 
-  int r = cvFindChessboardCorners(&img, cvSize(theGui->width, theGui->height), points, &corners);
+  int r = cvFindChessboardCorners(img, cvSize(theGui->width, theGui->height),
+	points, &corners);
 
-  cvReleaseData(&img);
+  // if nothing found, clean up and return
+  if (r == 0) throw 1;
 
-  if (r != 0) {
-    node.grid.points.resize(corners);
-    for(int i=0; i<corners; ++i) {
-      node.grid.points[i].set(points[i].x, points[i].y);
-      //    std::cout << "  corners:" << corners << "\n";
-    }
-    node.grid.dimension(theGui->width, theGui->height);
-    node.active = true;
-    node.extrinsic = false;
-    return true;
-  } else {
-    node.grid.points.clear();
-    node.active = false;
-    node.extrinsic = false;
-    return false;
+  // refine points
+  cvFindCornerSubPix(img, points, corners, cvSize(5, 5), cvSize(1, 1),
+	cvTermCriteria(CV_TERMCRIT_EPS|CV_TERMCRIT_ITER, 100, 0.001));
+
+  // copy grid to node
+  grid.points.resize(corners);
+  for(int i=0; i<corners; ++i) {
+    grid.points[i].set(points[i].x, points[i].y);
+    //    std::cout << "  corners:" << corners << "\n";
   }
+  grid.dimension(theGui->width, theGui->height);
+  return true;
 }
 
-void OpenCV::dimension(int x, int y)
+void OpenCVExtractor::dimension(int x, int y)
 {
-  if (!theGui) 
-    theGui = new OpenCVGui;
+  if (!theGui)
+    theGui = new OpenCVExtractorGui;
   theGui->dimension(x, y);
 }
 
-void OpenCVGui::dimension(int x, int y)
+void OpenCVExtractorGui::dimension(int x, int y)
 {
-  width = x; 
+  width = x;
   height = y;
   widthWidget->setValue(width);
   heightWidget->setValue(height);

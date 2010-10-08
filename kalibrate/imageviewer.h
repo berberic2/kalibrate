@@ -16,7 +16,7 @@ public:
   ImageWidget(QWidget *parent = 0);
   ImageWidget(const QImage &i, QWidget *parent = 0);
   void image(const QImage &i);
-  void grid(const Grid &g);
+  void grid(const Plate &g);
 
   void scale(double s);
 protected:
@@ -24,16 +24,19 @@ protected:
   virtual void wheelEvent(QWheelEvent *event);
 private:
   QImage theImage;
-  Grid theGrid;
+  Plate theGrid;
   double theScale;
+
+  void drawAxisLabel(QPainter &painter, const Point2 &a, const Point2 &b,
+	bool left, const char *label);
 };
 
 class ImageView : public QScrollArea
 {
   Q_OBJECT;
 public:
-  ImageView(QWidget *parent = 0) : theImage(parent) { 
-    setWidget(&theImage); 
+  ImageView(QWidget *parent = 0) : theImage(parent) {
+    setWidget(&theImage);
     setAlignment(Qt::AlignCenter);
   }
   ImageWidget &imageWidget() { return theImage; }
