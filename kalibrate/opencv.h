@@ -7,6 +7,9 @@
 
 #include <QWidget>
 #include <QSpinBox>
+#include <QString>
+
+#include <KLocale>
 
 #include "imagelist.h"
 #include "kalib_plugin.h"
@@ -23,11 +26,14 @@ class OpenCVExtractorGui : public QWidget
 public:
   int width; //!< width of chessboard
   int height; //!< height of chessboard
+  double dist_w; //!< width of chessboard-tile
+  double dist_h; //!< height of chessboard-tile
 
   OpenCVExtractorGui();
   ~OpenCVExtractorGui();
 
   void dimension(int x, int y); //!< set dimension of chessboard manually
+  void distance(double w, double h) { dist_w = w; dist_h = h; }
 
 private:
   QSpinBox *widthWidget, *heightWidget;
@@ -46,7 +52,7 @@ public:
   ~OpenCVExtractor();
   QWidget *getParamGui();
   bool operator() (const QImage &node, Plate &grid) const;
-  std::string getName() { return "OpenCV Chessboard"; }
+  QString getName() { return i18n("OpenCV chessboard"); }
 
   void dimension(int x, int y);
 
@@ -54,11 +60,9 @@ private:
   OpenCVExtractorGui *theGui;
 };
 
-inline QWidget *OpenCVExtractor::getParamGui()
+class OpenCVCamera : public Camera
 {
-  if(!theGui) 
-    theGui = new OpenCVExtractorGui;
-  return theGui;
-}
+  QString getName() { return i18n("OpenCV pinhole-camera"); } 
+};
 
 #endif

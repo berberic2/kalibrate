@@ -161,15 +161,15 @@ void ImageWidget::paintEvent(QPaintEvent * event)
     const int h = theGrid.height;
     for(int y=1; y<w; ++y)
       for(int x=0; x<w; ++x) {
-	const Point2 &a = theGrid.points[y*w+x];
-	const Point2 &b = theGrid.points[y*w+x-w];
+	const Point2 &a = theGrid.points[y*w+x].image;
+	const Point2 &b = theGrid.points[y*w+x-w].image;
 	Point2 d = normalize(b-a)*radius;
 	painter.drawLine(toQP(a+d), toQP(b-d));
       }
     for(int y=0; y<w; ++y)
       for(int x=1; x<w; ++x) {
-	const Point2 &a = theGrid.points[y*w+x];
-	const Point2 &b = theGrid.points[y*w+x-1];
+	const Point2 &a = theGrid.points[y*w+x].image;
+	const Point2 &b = theGrid.points[y*w+x-1].image;
 	Point2 d = normalize(b-a)*radius;
 	painter.drawLine(toQP(a+d), toQP(b-d));
       }
@@ -177,8 +177,8 @@ void ImageWidget::paintEvent(QPaintEvent * event)
     // TODO: bmg
     p.setColor("red");
     painter.setPen(p);
-    drawAxisLabel(painter, theGrid.points[0], theGrid.points[1], true, "x");
-    drawAxisLabel(painter, theGrid.points[0], theGrid.points[w], false, "y");
+    drawAxisLabel(painter, theGrid.points[0].image, theGrid.points[1].image, true, "x");
+    drawAxisLabel(painter, theGrid.points[0].image, theGrid.points[w].image, false, "y");
     //drawArrow(painter, theGrid.points[0], theGrid.points[1]);
     //drawArrow(painter, theGrid.points[0], theGrid.points[w]);
   }
@@ -186,10 +186,10 @@ void ImageWidget::paintEvent(QPaintEvent * event)
   // draw points
   p.setColor("red");
   painter.setPen(p);
-  foreach(Point2 i, theGrid.points) {
-    painter.drawEllipse(toQP(i), radius, radius);
+  foreach(Plate::Point i, theGrid.points) {
+    painter.drawEllipse(toQP(i.image), radius, radius);
   }
-  painter.drawEllipse(toQP(theGrid.points[0]), radius+4, radius+4);
+  painter.drawEllipse(toQP(theGrid.points[0].image), radius+4, radius+4);
 #else
   QPen p;
   p.setWidthF(2.0/theScale);

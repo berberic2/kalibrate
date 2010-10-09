@@ -16,7 +16,7 @@
 #include "opencv.h"
 
 OpenCVExtractorGui::OpenCVExtractorGui() :
-  width(11), height(11)
+  width(11), height(11), dist_w(1.0), dist_h(1.0)
 {
   // Widget
   QFormLayout *formLayout = new QFormLayout(this);
@@ -52,6 +52,17 @@ OpenCVExtractor::~OpenCVExtractor()
 {
   if (theGui)
     delete theGui;
+}
+
+/**
+ * Get GUI-elements for the openCV-Extractor.
+ * @return a pointer to a qwidget containing the gui
+ */
+QWidget *OpenCVExtractor::getParamGui()
+{
+  if(!theGui) 
+    theGui = new OpenCVExtractorGui;
+  return theGui;
 }
 
 /**
@@ -94,8 +105,10 @@ bool OpenCVExtractor::operator() (const QImage &image, Plate &grid) const
   // copy grid to node
   grid.points.resize(corners);
   for(int i=0; i<corners; ++i) {
-    grid.points[i].set(points[i].x, points[i].y);
-    //    std::cout << "  corners:" << corners << "\n";
+    grid.points[i].image.set(points[i].x, points[i].y);
+    grid.points[i].space.set(i%theGui->width * theGui->dist_w, 
+	  i/theGui->width * theGui->dist_h, 0.0);
+    // std::cout << grid.points[i] << "\n";
   }
   grid.dimension(theGui->width, theGui->height);
   return true;
