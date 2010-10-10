@@ -74,8 +74,8 @@ public:
   virtual Point2 distort(Point2 p) = 0;
   virtual Point2 undistort(Point2 p) = 0;
 
-  virtual Point2 worldToImage(Point3 p);
-  virtual Line3 imageToRay(Point2 p);
+  virtual Point2 worldToImage(Point3 p) = 0;
+  virtual Line3 imageToRay(Point2 p) = 0;
 
   /**
    * Give the name of this camera-type.
@@ -88,11 +88,9 @@ public:
 class Optimizer
 {
 public:
-  Optimizer() {};
-  Optimizer(Camera &c) {};
   virtual QWidget *getParamGui() = 0;
   virtual double optimize(std::vector<Plate> &plates) = 0;
-
+  virtual Camera *getCamera() { return camera; }
   /**
    * Give the name of this optimizer.
    * @returns the name of the optimizer in UTF-8 encoding.

@@ -12,6 +12,8 @@
 #include <QListView>
 #include <QAbstractListModel>
 #include <QAbstractItemDelegate>
+#include <QComboBox>
+
 #include <KPushButton>
 // #include <KActionCollection>
 #include <KMessageBox>
@@ -35,7 +37,7 @@
 #include "gui.moc"
 
 /** Plugin-System */
-#include "opencv.h"
+#include "kalib_plugin.h"
 
 /**
  * the filepattern / mime-type for module-files
@@ -98,25 +100,25 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   connect(panel_action, SIGNAL(toggled(bool)), this, SLOT(hideTree(bool)));
 #endif
 
-  // build widgets
+  QTabWidget *tabs = new QTabWidget(this);
+  
+  tabs->addTab(settingsWidget(this), i18n("Settings"));
+
+  // build viewer-widgets
   QSplitter *hsplitter = new QSplitter(this);
   QWidget *vboxw = new QWidget(this);
   QVBoxLayout *vbox = new QVBoxLayout(vboxw);
   theImageList = new ImageListView(&images, this);
   vbox->addWidget(theImageList);
-  QHBoxLayout *hbox2 = new QHBoxLayout();
-  KPushButton *bt_load = new KPushButton("Load");
-  hbox2->addWidget(bt_load);
-  KPushButton *bt_add = new KPushButton("Add");
-  hbox2->addWidget(bt_add);
-  vbox->addLayout(hbox2);
   hsplitter->addWidget(vboxw);
   theImageViewer = new ImageView(hsplitter);
   hsplitter->addWidget(theImageViewer);
-  setCentralWidget(hsplitter);
+  tabs->addTab(hsplitter, "Image View");
+
+  setCentralWidget(tabs);
+
 
   // signals
-  connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
   connect(theImageList, SIGNAL(clicked(const QModelIndex &)),
   	SLOT(imageSelected(const QModelIndex &)));
 
@@ -129,12 +131,49 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   fileMenu->addAction(actionCollection()->action("quit"));
 
   menuBar()->addMenu(helpMenu());
-
 }
 
 KalibrateGui::~KalibrateGui()
 {
 }
+
+QWidget *KalibrateGui::settingsWidget(QWidget *parent)
+{
+  QWidget *settings = new QWidget(parent);
+  settingsVBox = new QVBoxLayout(settings);
+
+  // Loading
+  QComboBox *loaderSelect = new QComboBox(settings);
+  loaderSelect->addItem("From File");
+  settingsVBox->addWidget(loaderSelect);
+  /**/
+  QWidget *loaderGUI = new QWidget;
+  QHBoxLayout *hbox1 = new QHBoxLayout(loaderGUI);
+  KPushButton *bt_load = new KPushButton("Load");
+  hbox1->addWidget(bt_load);
+  KPushButton *bt_add = new KPushButton("Add");
+  hbox1->addWidget(bt_add);
+  // signals
+  connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
+  /**/
+  settingsVBox->insertWidget(settingsVBox->indexOf(loaderSelect)+1, loaderGUI);
+
+  // Extract
+  extractorSelector = new QComboBox(settings);
+  settingsVBox->addWidget(extractorSelector);
+  connect(extractorSelector, SIGNAL(currentIndexChanged(int)), 
+	SLOT(extractorChanged(int)));
+
+  // Optimize
+  optimizerSelector = new QComboBox(settings);
+  settingsVBox->addWidget(optimizerSelector);
+  
+  //  settingsVBox->insertWidget(settingsVBox->indexOf(loaderSelect)+1, loaderGUI);
+
+  settingsVBox->addStretch();
+  return settings;
+}
+
 
 void KalibrateGui::load_images()
 {
@@ -146,9 +185,9 @@ void KalibrateGui::load_images()
     ImageNode node;
     node.set(*i);
     try { // ToDo
-      OpenCVExtractor cv;
-      cv.dimension(10, 10);
-      if(cv(node.image, node.grid)){
+      Extractor *cv = extractors[0];
+      //cv->dimension(10, 10);
+      if((*cv)(node.image, node.grid)){
 	node.active = true;
 	node.extrinsic = false;
       } else {
@@ -245,4 +284,33 @@ void KalibrateGui::readProperties(const KConfigGroup &conf)
   autoUpdate(aut);
   graph->last(range);
 #endif
+}
+
+/**
+ * Add an extractor to the GUI.
+ * @param f pointer to a function that returns an Extractor-object.
+ */
+void KalibrateGui::addExtractor(Extractor *(*f)())
+{
+  extractors.push_back(f());
+  extractorSelector->addItem(f()->getName());
+}
+
+/**
+ * Add an optimizer to the GUI.
+ * @param f pointer to a function that returns an Optimizer-object.
+ */
+void KalibrateGui::addOptimizer(Optimizer *(*f)())
+{
+  optimizers.push_back(f());
+  optimizerSelector->addItem(f()->getName());
+}
+
+void KalibrateGui::extractorChanged(int i)
+{
+  std::cout << i << "\n";
+  Extractor *A = extractors[i];
+  std::cout << A << "\n";
+  settingsVBox->insertWidget(settingsVBox->indexOf(extractorSelector)+1, 
+	extractors[i]->getParamGui());
 }

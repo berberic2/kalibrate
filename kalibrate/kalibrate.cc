@@ -33,6 +33,7 @@
 #include "../config.h"
 
 #include "gui.h"
+#include "opencv.h"
 
 
 int main(int argc, char **argv)
@@ -66,6 +67,11 @@ int main(int argc, char **argv)
     // handling arguments
     //    if(args->count() == 1) gui->load(args->arg(0));
     gui->setObjectName("kalibrate");
+
+    // add all plugins to the gui.
+    gui->addExtractor(OpenCVExtractor::newExtractor);
+    gui->addOptimizer(OpenCVOptimizer::newOptimizer);
+
     gui->show();
   }
 

@@ -30,17 +30,16 @@ public:
   double dist_h; //!< height of chessboard-tile
 
   OpenCVExtractorGui();
-  ~OpenCVExtractorGui();
-
-  void dimension(int x, int y); //!< set dimension of chessboard manually
-  void distance(double w, double h) { dist_w = w; dist_h = h; }
+  ~OpenCVExtractorGui() { }
 
 private:
-  QSpinBox *widthWidget, *heightWidget;
+  // QSpinBox *widthWidget, *heightWidget;
 
 private slots:
   void widthChanged(int i) { width = i; }
   void heightChanged(int i) { height = i; }
+  void distxChanged(double i) { dist_w = i; }
+  void distyChanged(double i) { dist_h = i; }
 };
 
 /**
@@ -48,21 +47,52 @@ private slots:
  */
 class OpenCVExtractor : public Extractor {
 public:
-  OpenCVExtractor();
-  ~OpenCVExtractor();
+ OpenCVExtractor() : theGui(0) { }
+  ~OpenCVExtractor()  { if (theGui) delete theGui; }
   QWidget *getParamGui();
   bool operator() (const QImage &node, Plate &grid) const;
   QString getName() { return i18n("OpenCV chessboard"); }
 
   void dimension(int x, int y);
 
+  static Extractor *newExtractor() { return new OpenCVExtractor; }
 private:
   OpenCVExtractorGui *theGui;
 };
 
 class OpenCVCamera : public Camera
 {
+ public:
+  Point2 distort(Point2 p) {}
+  Point2 undistort(Point2 p) {}
+
+  Point2 worldToImage(Point3 p) {}
+  Line3 imageToRay(Point2 p) {}
+
   QString getName() { return i18n("OpenCV pinhole-camera"); } 
+
+ private:
+  //CvMat* cameraMatrix;
+  //CvMat* distCoeffs;
+};
+
+class OpenCVOptimizer : public Optimizer
+{
+public:
+ OpenCVOptimizer() : camera(0) { }
+  ~OpenCVOptimizer() { }
+  QWidget *getParamGui() { return 0; }
+  double optimize(std::vector<Plate> &plates) { }
+
+  /**
+   * Give the name of this optimizer.
+   * @returns the name of the optimizer in UTF-8 encoding.
+   */
+  QString getName() { return i18n("OpenCV Calibration"); } 
+  static Optimizer *newOptimizer() { return new OpenCVOptimizer; }
+
+private:
+  Camera *camera;
 };
 
 #endif

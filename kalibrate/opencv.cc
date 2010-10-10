@@ -22,36 +22,38 @@ OpenCVExtractorGui::OpenCVExtractorGui() :
   QFormLayout *formLayout = new QFormLayout(this);
 
   // Label
-  QLabel *label = new QLabel(i18n("Chessboard-size:"), this);
-  formLayout->setWidget(0, QFormLayout::LabelRole, label);
+  QLabel *formlabel = new QLabel(i18n("Chessboard-size:"), this);
 
   // w×h Eingabe
-  QHBoxLayout *horizontalLayout = new QHBoxLayout();
-  widthWidget = new QSpinBox(this);
+  QWidget *widget = new QWidget(this);
+  QHBoxLayout *horizontalLayout = new QHBoxLayout(widget);
+  QSpinBox *widthWidget = new QSpinBox(this);
   horizontalLayout->addWidget(widthWidget);
-  QLabel *labelx = new QLabel(QString::fromUtf8("×"), this);
-  horizontalLayout->addWidget(labelx);
-  heightWidget = new QSpinBox(this);
+  QLabel *label = new QLabel(QString::fromUtf8("×"), this);
+  horizontalLayout->addWidget(label);
+  QSpinBox *heightWidget = new QSpinBox(this);
   horizontalLayout->addWidget(heightWidget);
+  formLayout->addRow(formlabel, widget);
+
+  // Label
+  formlabel = new QLabel(i18n("Chessboard-dimension:"), this);
+
+  // dimension Eingabe
+  widget = new QWidget(this);
+  horizontalLayout = new QHBoxLayout(widget);
+  QDoubleSpinBox *distxWidget = new QDoubleSpinBox(this);
+  horizontalLayout->addWidget(distxWidget);
+  label = new QLabel(QString::fromUtf8("×"), this);
+  horizontalLayout->addWidget(label);
+  QDoubleSpinBox *distyWidget = new QDoubleSpinBox(this);
+  horizontalLayout->addWidget(distyWidget);
+  formLayout->addRow(formlabel, widget);
 
   // connect actions to widgets
   connect(widthWidget, SIGNAL(valueChanged(int)), SLOT(widthChanged(int)));
   connect(heightWidget, SIGNAL(valueChanged(int)), SLOT(heightChanged(int)));
-}
-
-OpenCVExtractorGui::~OpenCVExtractorGui()
-{
-}
-
-OpenCVExtractor::OpenCVExtractor() :
-  theGui(0)
-{
-}
-
-OpenCVExtractor::~OpenCVExtractor()
-{
-  if (theGui)
-    delete theGui;
+  connect(distxWidget, SIGNAL(valueChanged(double)), SLOT(distyChanged(double)));
+  connect(distyWidget, SIGNAL(valueChanged(double)), SLOT(distxChanged(double)));
 }
 
 /**
@@ -113,21 +115,3 @@ bool OpenCVExtractor::operator() (const QImage &image, Plate &grid) const
   grid.dimension(theGui->width, theGui->height);
   return true;
 }
-
-void OpenCVExtractor::dimension(int x, int y)
-{
-  if (!theGui)
-    theGui = new OpenCVExtractorGui;
-  theGui->dimension(x, y);
-}
-
-void OpenCVExtractorGui::dimension(int x, int y)
-{
-  width = x;
-  height = y;
-  widthWidget->setValue(width);
-  heightWidget->setValue(height);
-}
-
-
-
