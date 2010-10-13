@@ -23,31 +23,29 @@ OpenCVExtractorGui::OpenCVExtractorGui() :
 
   // Label
   QLabel *formlabel = new QLabel(i18n("Chessboard-size:"), this);
-
+ 
   // w×h Eingabe
-  QWidget *widget = new QWidget(this);
-  QHBoxLayout *horizontalLayout = new QHBoxLayout(widget);
+  QHBoxLayout *horizontalLayout = new QHBoxLayout();
   QSpinBox *widthWidget = new QSpinBox(this);
   horizontalLayout->addWidget(widthWidget);
   QLabel *label = new QLabel(QString::fromUtf8("×"), this);
   horizontalLayout->addWidget(label);
   QSpinBox *heightWidget = new QSpinBox(this);
   horizontalLayout->addWidget(heightWidget);
-  formLayout->addRow(formlabel, widget);
+  formLayout->addRow(formlabel, horizontalLayout);
 
   // Label
   formlabel = new QLabel(i18n("Chessboard-dimension:"), this);
 
   // dimension Eingabe
-  widget = new QWidget(this);
-  horizontalLayout = new QHBoxLayout(widget);
+  horizontalLayout = new QHBoxLayout();
   QDoubleSpinBox *distxWidget = new QDoubleSpinBox(this);
   horizontalLayout->addWidget(distxWidget);
   label = new QLabel(QString::fromUtf8("×"), this);
   horizontalLayout->addWidget(label);
   QDoubleSpinBox *distyWidget = new QDoubleSpinBox(this);
   horizontalLayout->addWidget(distyWidget);
-  formLayout->addRow(formlabel, widget);
+  formLayout->addRow(formlabel, horizontalLayout);
 
   // connect actions to widgets
   connect(widthWidget, SIGNAL(valueChanged(int)), SLOT(widthChanged(int)));

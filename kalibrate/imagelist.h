@@ -35,6 +35,7 @@ struct ImageNode
   void set(const QString &filename);
 };
 typedef std::vector<ImageNode> imageList;
+typedef imageList::iterator imageIterator;
 
 
 Q_DECLARE_METATYPE(const ImageNode*)

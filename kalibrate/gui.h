@@ -26,12 +26,12 @@ class KalibrateGui : public KMainWindow // QWidget
 public:
   KalibrateGui(QWidget *parent=0);
   virtual ~KalibrateGui();
-  
+
   KActionCollection* actionCollection() { return &action_collection; }
-  
+
   void load(const QString &filename);
   void save(const QString &filename);
-				    
+
   void addExtractor(Extractor *(*f)());
   void addOptimizer(Optimizer *(*f)());
 
@@ -41,25 +41,27 @@ public slots:
   virtual void load_images();
   virtual void imageSelected(const QModelIndex & index);
   virtual void extractorChanged(int i);
-  
+  virtual void optimizerChanged(int i);
+  virtual void executeExtractor();
+
 protected:
   virtual void saveProperties(KConfigGroup &);
   virtual void readProperties(const KConfigGroup &);
-  
+
 private:
   KActionCollection action_collection;
   QListView *theImageList;
   ImageView *theImageViewer;
   QComboBox *extractorSelector, *optimizerSelector;
-  QVBoxLayout *settingsVBox;
+  QVBoxLayout *settingsVBox, *extractorLayout, *optimizerLayout;
+  QWidget *extractorGui, *optimizerGui;
 
   // Daten
   imageList images;
   std::vector<Extractor *> extractors;
   std::vector<Optimizer *> optimizers;
 
-  QWidget *settingsWidget(QWidget *parent);
-
+  QWidget *settingsWidget();
 };
 
 #endif

@@ -13,8 +13,11 @@
 #include <QAbstractListModel>
 #include <QAbstractItemDelegate>
 #include <QComboBox>
+#include <QLabel>
+#include <QGroupBox>
 
 #include <KPushButton>
+#include <KTabWidget>
 // #include <KActionCollection>
 #include <KMessageBox>
 #include <KLocale>
@@ -72,7 +75,8 @@ static struct {
  * @param parent parent-widget see KMainWindow
  */
 KalibrateGui::KalibrateGui(QWidget *parent)
-  : KMainWindow(parent), action_collection(parent)
+  : KMainWindow(parent), action_collection(parent),
+    extractorGui(0), optimizerGui(0)
 {
   // standard_actions
   for (size_t i=0; i< sizeof(standard_actions)/sizeof(*standard_actions); ++i)
@@ -100,9 +104,9 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   connect(panel_action, SIGNAL(toggled(bool)), this, SLOT(hideTree(bool)));
 #endif
 
-  QTabWidget *tabs = new QTabWidget(this);
-  
-  tabs->addTab(settingsWidget(this), i18n("Settings"));
+  // Widgets
+  KTabWidget *tabs = new KTabWidget(this);
+  tabs->addTab(settingsWidget(), i18n("Settings"));
 
   // build viewer-widgets
   QSplitter *hsplitter = new QSplitter(this);
@@ -116,7 +120,6 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   tabs->addTab(hsplitter, "Image View");
 
   setCentralWidget(tabs);
-
 
   // signals
   connect(theImageList, SIGNAL(clicked(const QModelIndex &)),
@@ -137,17 +140,20 @@ KalibrateGui::~KalibrateGui()
 {
 }
 
-QWidget *KalibrateGui::settingsWidget(QWidget *parent)
+QWidget *KalibrateGui::settingsWidget()
 {
-  QWidget *settings = new QWidget(parent);
+  QWidget *settings = new QWidget();
   settingsVBox = new QVBoxLayout(settings);
 
   // Loading
-  QComboBox *loaderSelect = new QComboBox(settings);
+
+  QGroupBox *group = new QGroupBox(i18n("Aquire Images."), this);
+  QVBoxLayout *groupVBox = new QVBoxLayout(group);
+  QComboBox *loaderSelect = new QComboBox(group);
   loaderSelect->addItem("From File");
-  settingsVBox->addWidget(loaderSelect);
+  groupVBox->addWidget(loaderSelect);
   /**/
-  QWidget *loaderGUI = new QWidget;
+  QWidget *loaderGUI = new QWidget(group);
   QHBoxLayout *hbox1 = new QHBoxLayout(loaderGUI);
   KPushButton *bt_load = new KPushButton("Load");
   hbox1->addWidget(bt_load);
@@ -156,21 +162,33 @@ QWidget *KalibrateGui::settingsWidget(QWidget *parent)
   // signals
   connect(bt_load, SIGNAL(clicked()), SLOT(load_images()));
   /**/
-  settingsVBox->insertWidget(settingsVBox->indexOf(loaderSelect)+1, loaderGUI);
+  groupVBox->insertWidget(groupVBox->indexOf(loaderSelect)+1, loaderGUI);
+  settingsVBox->addWidget(group);
 
   // Extract
-  extractorSelector = new QComboBox(settings);
-  settingsVBox->addWidget(extractorSelector);
+  group = new QGroupBox(i18n("Extract Points."), this);
+  extractorLayout = new QVBoxLayout(group);
+  extractorSelector = new QComboBox(group);
+  extractorLayout->addWidget(extractorSelector);
+  KPushButton *execute = new KPushButton("Find Points", group);
+  extractorLayout->addWidget(execute);
   connect(extractorSelector, SIGNAL(currentIndexChanged(int)), 
 	SLOT(extractorChanged(int)));
+  connect(execute, SIGNAL(clicked()), SLOT(executeExtractor()));
+  settingsVBox->addWidget(group);
 
   // Optimize
-  optimizerSelector = new QComboBox(settings);
-  settingsVBox->addWidget(optimizerSelector);
-  
-  //  settingsVBox->insertWidget(settingsVBox->indexOf(loaderSelect)+1, loaderGUI);
+  group = new QGroupBox(i18n("Determine Camera-Parameters."), this);
+  optimizerLayout = new QVBoxLayout(group);
+  optimizerSelector = new QComboBox(group);
+  optimizerLayout->addWidget(optimizerSelector);
+  execute = new KPushButton("Optimize", group);
+  optimizerLayout->addWidget(execute);
+  connect(optimizerSelector, SIGNAL(currentIndexChanged(int)), 
+	SLOT(optimizerChanged(int)));
+  settingsVBox->addWidget(group);
 
-  settingsVBox->addStretch();
+  settingsVBox->addStretch(100);
   return settings;
 }
 
@@ -184,26 +202,7 @@ void KalibrateGui::load_images()
     std::cout << qPrintable(*i) << "\n";
     ImageNode node;
     node.set(*i);
-    try { // ToDo
-      Extractor *cv = extractors[0];
-      //cv->dimension(10, 10);
-      if((*cv)(node.image, node.grid)){
-	node.active = true;
-	node.extrinsic = false;
-      } else {
-	node.active = false;
-	node.extrinsic = false;
-      }
-    }
-    catch(...) {
-      node.grid.points.clear();
-      node.active = false;
-      node.extrinsic = false;
-      KMessageBox::sorry(this,
-	    i18n("Could not find a grid or points in ‘%1’\n", *i));
-    }
     images.push_back(node);
-    //    theImageViewer->imageWidget().image(node.image);
   }
   theImageList->reset();
 }
@@ -296,6 +295,39 @@ void KalibrateGui::addExtractor(Extractor *(*f)())
   extractorSelector->addItem(f()->getName());
 }
 
+void KalibrateGui::extractorChanged(int i)
+{
+  QWidget *Gui = extractors[i]->getParamGui();
+  if (extractorGui) extractorLayout->removeWidget(extractorGui);
+  extractorLayout->insertWidget(1, Gui);
+  extractorGui = Gui;
+}
+
+void KalibrateGui::executeExtractor()
+{
+  Extractor *cv = extractors[extractorSelector->currentIndex()];
+  for(imageIterator i=images.begin(); i!=images.end(); ++i) {
+    ImageNode &node = *i;
+    try {
+      if((*cv)(node.image, node.grid)){
+	node.active = true;
+	node.extrinsic = false;
+      } else {
+	node.active = false;
+	node.extrinsic = false;
+      }
+    }
+    catch(...) {
+      node.grid.points.clear();
+      node.active = false;
+      node.extrinsic = false;
+      KMessageBox::sorry(this,
+	    i18n("Could not find a grid or points in ‘%1’\n", node.name));
+    }
+  }
+}
+
+
 /**
  * Add an optimizer to the GUI.
  * @param f pointer to a function that returns an Optimizer-object.
@@ -306,11 +338,10 @@ void KalibrateGui::addOptimizer(Optimizer *(*f)())
   optimizerSelector->addItem(f()->getName());
 }
 
-void KalibrateGui::extractorChanged(int i)
+void KalibrateGui::optimizerChanged(int i)
 {
-  std::cout << i << "\n";
-  Extractor *A = extractors[i];
-  std::cout << A << "\n";
-  settingsVBox->insertWidget(settingsVBox->indexOf(extractorSelector)+1, 
-	extractors[i]->getParamGui());
+  QWidget *Gui = optimizers[i]->getParamGui();
+  if (optimizerGui) optimizerLayout->removeWidget(optimizerGui);
+  optimizerLayout->insertWidget(1, Gui);
+  optimizerGui = Gui;
 }
