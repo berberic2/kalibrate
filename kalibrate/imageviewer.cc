@@ -140,7 +140,12 @@ void ImageWidget::paintEvent(QPaintEvent * event)
 {
   QWidget::paintEvent(event);
   QPainter painter(this);
-  painter.setRenderHint(QPainter::Antialiasing);
+  if (theScale < 1.0) {
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+  } else {
+    painter.setRenderHint(QPainter::Antialiasing);
+  }
   painter.scale(theScale, theScale);
   painter.translate(0.5, 0.5);
 #if 1
