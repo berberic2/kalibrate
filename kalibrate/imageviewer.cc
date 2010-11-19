@@ -159,14 +159,14 @@ void ImageWidget::paintEvent(QPaintEvent * event)
     painter.setPen(p);
     const int w = theGrid.width;
     const int h = theGrid.height;
-    for(int y=1; y<w; ++y)
+    for(int y=1; y<h; ++y)
       for(int x=0; x<w; ++x) {
 	const Point2 &a = theGrid.points[y*w+x].image;
 	const Point2 &b = theGrid.points[y*w+x-w].image;
 	Point2 d = normalize(b-a)*radius;
 	painter.drawLine(toQP(a+d), toQP(b-d));
       }
-    for(int y=0; y<w; ++y)
+    for(int y=0; y<h; ++y)
       for(int x=1; x<w; ++x) {
 	const Point2 &a = theGrid.points[y*w+x].image;
 	const Point2 &b = theGrid.points[y*w+x-1].image;

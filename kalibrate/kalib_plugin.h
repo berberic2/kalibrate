@@ -32,6 +32,7 @@ struct Plate
   bool isRectangular() { return rectangular; }
   void dimension(int w, int h) { rectangular = true; width = w; height = h; }
   size_t size() { return points.size(); }
+  void clear() { points.clear(); width = height = 0; }
 };
 
 /**

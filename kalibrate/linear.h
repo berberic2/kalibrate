@@ -21,6 +21,7 @@ struct Point2
   Point2() : x(0), y(0) {}
   Point2(double a, double b) : x(a), y(b) {}
   void set(double a, double b) { x = a; y = b; }
+  bool isnan() const { return std::isnan(x); }
   Point2 operator- (const Point2 &b) const { return Point2(x-b.x, y-b.y); }
   Point2 operator+ (const Point2 &b) const { return Point2(x+b.x, y+b.y); }
   Point2 operator/ (double s) const { return Point2(x/s, y/s); }
@@ -56,6 +57,7 @@ struct Point3
   Point3() : x(0), y(0), z(0) {}
   Point3(double a, double b, double c) : x(a), y(b), z(b) {}
   void set(double a, double b, double c) { x = a; y = b; z = c; }
+  bool isnan() const { return std::isnan(x); }
 };
 
 /**

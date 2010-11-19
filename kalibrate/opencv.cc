@@ -52,6 +52,10 @@ OpenCVExtractorGui::OpenCVExtractorGui() :
   connect(heightWidget, SIGNAL(valueChanged(int)), SLOT(heightChanged(int)));
   connect(distxWidget, SIGNAL(valueChanged(double)), SLOT(distyChanged(double)));
   connect(distyWidget, SIGNAL(valueChanged(double)), SLOT(distxChanged(double)));
+
+  // defaults
+  distxWidget->setValue(1.0);
+  distyWidget->setValue(1.0);
 }
 
 /**

@@ -305,9 +305,11 @@ void KalibrateGui::extractorChanged(int i)
 
 void KalibrateGui::executeExtractor()
 {
+  int fails = 0;
   Extractor *cv = extractors[extractorSelector->currentIndex()];
   for(imageIterator i=images.begin(); i!=images.end(); ++i) {
     ImageNode &node = *i;
+    node.grid.clear();
     try {
       if((*cv)(node.image, node.grid)){
 	node.active = true;
@@ -321,9 +323,13 @@ void KalibrateGui::executeExtractor()
       node.grid.points.clear();
       node.active = false;
       node.extrinsic = false;
-      KMessageBox::sorry(this,
-	    i18n("Could not find a grid or points in ‘%1’\n", node.name));
+      fails++;
     }
+  }
+  if (fails) {
+    KMessageBox::sorry(this,
+	  i18n("Could not find a grid or points in %1 of %2 images:", 
+		fails, images.size()));
   }
 }
 
