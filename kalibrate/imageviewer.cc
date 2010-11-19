@@ -8,6 +8,7 @@
 #include <QAbstractScrollArea>
 #include <QPainter>
 #include <QWheelEvent>
+#include <QScrollBar>
 
 #include "imagelist.h"
 #include "imageviewer.h"
@@ -204,24 +205,6 @@ void ImageWidget::paintEvent(QPaintEvent * event)
 }
 
 /**
- * Handle wheel-events
- *
- * Wheel allows to zooms in/out (changes the scale)
- *
- * @param event
- */
-void ImageWidget::wheelEvent(QWheelEvent *event)
-{
-  if(event->orientation() == Qt::Vertical) {
-    double s = theScale*pow(M_SQRT2, event->delta()/(15.0*8.0));
-    if (s > 0.1 && s < 10) {
-      scale(s);
-      // ToDo set scroll so that center stays fixed
-    }
-  }
-}
-
-/**
  * Set the image
  *
  * Set the image that is displayed. The image gets copied
@@ -247,3 +230,27 @@ void ImageWidget::grid(const Plate &g)
   theGrid = g;
   update();
 };
+
+/**
+ * Handle wheel-events
+ *
+ * Wheel allows to zooms in/out (changes the scale)
+ *
+ * @param event
+ */
+void ImageView::wheelEvent(QWheelEvent *event)
+{
+  if(event->orientation() == Qt::Vertical) {
+    double fx = double(event->x()-theImage.x())/theImage.width();
+    double fy = double(event->y()-theImage.y())/theImage.height();
+    double sf = pow(M_SQRT2, event->delta()/(15.0*8.0));
+    double s = theImage.scale()*sf;
+    if (s > 0.1 && s < 10) {
+      theImage.scale(s);
+      // zoom with fixed mousecursor
+      horizontalScrollBar()->setValue(theImage.width()*fx-event->x());
+      verticalScrollBar()->setValue(theImage.height()*fy-event->y());
+    }
+  }
+}
+

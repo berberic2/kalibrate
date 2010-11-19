@@ -19,9 +19,11 @@ public:
   void grid(const Plate &g);
 
   void scale(double s);
+  double scale() const { return theScale; };
+
 protected:
   virtual void paintEvent(QPaintEvent *event);
-  virtual void wheelEvent(QWheelEvent *event);
+
 private:
   QImage theImage;
   Plate theGrid;
@@ -41,6 +43,10 @@ public:
   }
   ImageWidget &imageWidget() { return theImage; }
   const ImageWidget &imageWidget() const { return theImage; }
+
+protected:
+    virtual void wheelEvent(QWheelEvent *event);
+
 private:
   ImageWidget theImage;
 };
