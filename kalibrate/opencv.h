@@ -9,6 +9,7 @@
 #include <QSpinBox>
 #include <QString>
 
+#include <KPushButton>
 #include <KLocale>
 
 #include "imagelist.h"
@@ -28,18 +29,25 @@ public:
   int height; //!< height of chessboard
   double dist_w; //!< width of chessboard-tile
   double dist_h; //!< height of chessboard-tile
+  int window_w; //!< half width of subpixel-refine-window
+  int window_h; //!< half height of subpixel-refine-window
+  int zero_w; //!< half width of subpixel-refine-zero-area
+  int zero_h; //!< half height of subpixel-refine-reao-area
+  QWidget *moreGroup;
 
   OpenCVExtractorGui();
   ~OpenCVExtractorGui() { }
-
-private:
-  // QSpinBox *widthWidget, *heightWidget;
 
 private slots:
   void widthChanged(int i) { width = i; }
   void heightChanged(int i) { height = i; }
   void distxChanged(double i) { dist_w = i; }
   void distyChanged(double i) { dist_h = i; }
+  void windowxChanged(int i) { window_w = i; }
+  void windowyChanged(int i) { window_h = i; }
+  void zeroxChanged(int i) { zero_w = i; }
+  void zeroyChanged(int i) { zero_h = i; }
+  void moreChanged(int state);
 };
 
 /**

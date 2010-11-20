@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QFormLayout>
+#include <QCheckBox>
 
 #include <KLocale>
 
@@ -19,6 +20,7 @@ OpenCVExtractorGui::OpenCVExtractorGui() :
   width(11), height(11), dist_w(1.0), dist_h(1.0)
 {
   // Widget
+  QVBoxLayout *widgetLayout = new QVBoxLayout(this);
   QFormLayout *formLayout = new QFormLayout(this);
 
   // Label
@@ -47,15 +49,76 @@ OpenCVExtractorGui::OpenCVExtractorGui() :
   horizontalLayout->addWidget(distyWidget);
   formLayout->addRow(formlabel, horizontalLayout);
 
+  widgetLayout->addLayout(formLayout);
+
+  // more-box
+  QCheckBox  *moreWidget = new QCheckBox("More", this);
+  widgetLayout->addWidget(moreWidget);
+
+  // more-group
+  moreGroup = new QWidget(this);
+  QFormLayout *moreLayout = new QFormLayout(moreGroup);
+
+  // Label
+  formlabel = new QLabel(i18n("½ window-size:"), moreGroup);
+  // window input (x, y)
+  horizontalLayout = new QHBoxLayout();
+  QSpinBox *windowxWidget = new QSpinBox(moreGroup);
+  horizontalLayout->addWidget(windowxWidget);
+  label = new QLabel(QString::fromUtf8("×"), moreGroup);
+  horizontalLayout->addWidget(label);
+  QSpinBox *windowyWidget = new QSpinBox(moreGroup);
+  horizontalLayout->addWidget(windowyWidget);
+  moreLayout->addRow(formlabel, horizontalLayout);
+
+  formlabel = new QLabel(i18n("½ zero-zone:"), moreGroup);
+  // zero-zone input (x, y)
+  horizontalLayout = new QHBoxLayout();
+  QSpinBox *zeroxWidget = new QSpinBox(moreGroup);
+  horizontalLayout->addWidget(zeroxWidget);
+  label = new QLabel(QString::fromUtf8("×"), moreGroup);
+  horizontalLayout->addWidget(label);
+  QSpinBox *zeroyWidget = new QSpinBox(moreGroup);
+  horizontalLayout->addWidget(zeroyWidget);
+  moreLayout->addRow(formlabel, horizontalLayout);
+
+  widgetLayout->addWidget(moreGroup);
+  moreGroup->hide();
+
   // connect actions to widgets
   connect(widthWidget, SIGNAL(valueChanged(int)), SLOT(widthChanged(int)));
   connect(heightWidget, SIGNAL(valueChanged(int)), SLOT(heightChanged(int)));
   connect(distxWidget, SIGNAL(valueChanged(double)), SLOT(distyChanged(double)));
   connect(distyWidget, SIGNAL(valueChanged(double)), SLOT(distxChanged(double)));
+  connect(distyWidget, SIGNAL(valueChanged(double)), SLOT(distxChanged(double)));
+  connect(moreWidget, SIGNAL(stateChanged(int)), SLOT(moreChanged(int)));
+  connect(windowxWidget, SIGNAL(valueChanged(int)), SLOT(windowxChanged(int)));
+  connect(windowyWidget, SIGNAL(valueChanged(int)), SLOT(windowyChanged(int)));
+  connect(zeroxWidget, SIGNAL(valueChanged(int)), SLOT(zeroxChanged(int)));
+  connect(zeroyWidget, SIGNAL(valueChanged(int)), SLOT(zeroyChanged(int)));
 
   // defaults
   distxWidget->setValue(1.0);
   distyWidget->setValue(1.0);
+  windowxWidget->setValue(5);
+  windowyWidget->setValue(5);
+  zeroxWidget->setValue(1);
+  zeroyWidget->setValue(1);
+}
+
+/**
+ * Handle show/hide of the experts configuration group
+ */
+void OpenCVExtractorGui::moreChanged(int state)
+{
+  switch(state) {
+  case Qt::Unchecked:
+    moreGroup->hide();
+    break;
+  case Qt::Checked:
+    moreGroup->show();
+    break;
+  }
 }
 
 /**
@@ -103,7 +166,15 @@ bool OpenCVExtractor::operator() (const QImage &image, Plate &grid) const
   if (r == 0) throw 1;
 
   // refine points
-  cvFindCornerSubPix(img, points, corners, cvSize(5, 5), cvSize(1, 1),
+  CvSize window, zero;
+  if (theGui->moreGroup->isHidden()) {
+    window = cvSize(5, 5);
+    zero = cvSize(1, 1);
+  } else {
+    window = cvSize(theGui->window_w, theGui->window_h);
+    zero = cvSize(theGui->zero_w, theGui->zero_h);
+  }
+  cvFindCornerSubPix(img, points, corners, window, zero,
 	cvTermCriteria(CV_TERMCRIT_EPS|CV_TERMCRIT_ITER, 100, 0.001));
 
   // copy grid to node
