@@ -42,6 +42,11 @@ class Extractor
 {
 public:
   /**
+   * Desctructor
+   */
+  virtual ~Extractor() = 0;
+
+  /**
    * @return a pointer to a qwidget containing the gui
    */
   virtual QWidget *getParamGui() = 0;
@@ -70,6 +75,11 @@ public:
 class Camera
 {
 public:
+  /**
+   * Desctructor
+   */
+  virtual ~Camera() = 0;
+
   // virtual QWidget *getParamGui() = 0;
 
   virtual Point2 distort(Point2 p) = 0;
@@ -89,6 +99,11 @@ public:
 class Optimizer
 {
 public:
+  /**
+   * Desctructor
+   */
+  virtual ~Optimizer() = 0;
+
   virtual QWidget *getParamGui() = 0;
   virtual double optimize(std::vector<Plate> &plates) = 0;
   virtual Camera *getCamera() { return camera; }
