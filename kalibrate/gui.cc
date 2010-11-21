@@ -5,6 +5,7 @@
 #include <iostream>
 #include <set>
 #include <sstream>
+#include <fstream>
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -15,6 +16,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QGroupBox>
+#include <QtGlobal>
 
 #include <KPushButton>
 #include <KTabWidget>
@@ -25,7 +27,7 @@
 #include <KMenuBar>
 #include <KMenu>
 // #include <KStandardAction>
-// #include <KAction>
+#include <KAction>
 // #include <KToggleAction>
 // #include <KHelpMenu>
 // #include <KStandardDirs>
@@ -66,7 +68,7 @@ static struct {
   const char *name;
   const char *slot;
 } normal_actions[] = {
-  { I18N_NOOP("Last Hour"),        "lastHour",   SLOT(last_hour()) },
+  { I18N_NOOP("Save pointlist as plain text"),   "savePointList", SLOT(savePointList()) },
 };
 
 /**
@@ -83,13 +85,13 @@ KalibrateGui::KalibrateGui(QWidget *parent)
     actionCollection()->addAction(standard_actions[i].actionType,
 	  standard_actions[i].name, this, standard_actions[i].slot);
   // TODO:
-#if 0
   // normal actions
   for (size_t i=0; i< sizeof(normal_actions)/sizeof(*normal_actions); ++i) {
     KAction *act = new KAction(i18n(normal_actions[i].label), this);
     connect(act, SIGNAL(triggered()), this, normal_actions[i].slot);
     actionCollection()->addAction(normal_actions[i].name, act);
   }
+#if 0
   // toggle_actions
   auto_action = new KAction(KIcon("chronometer"), i18n("Automatic Update"), this);
   auto_action->setCheckable(true);
@@ -130,6 +132,8 @@ KalibrateGui::KalibrateGui(QWidget *parent)
   menuBar()->addMenu(fileMenu);
   fileMenu->addAction(actionCollection()->action("open"));
   fileMenu->addAction(actionCollection()->action("save"));
+  fileMenu->addSeparator();
+  fileMenu->addAction(actionCollection()->action("savePointList"));
   fileMenu->addSeparator();
   fileMenu->addAction(actionCollection()->action("quit"));
 
@@ -239,7 +243,7 @@ void KalibrateGui::imageSelected(const QModelIndex &index)
   theImageViewer->imageWidget().grid(node->grid);
 }
 
-void KalibrateGui::saveProperties(KConfigGroup &conf)
+void KalibrateGui::saveProperties(KConfigGroup &/*conf*/)
 {
 #if 0
   conf.writeEntry("hide-navigation", listview_->isHidden());
@@ -262,7 +266,7 @@ void KalibrateGui::saveProperties(KConfigGroup &conf)
 #endif
 }
 
-void KalibrateGui::readProperties(const KConfigGroup &conf)
+void KalibrateGui::readProperties(const KConfigGroup &/*conf*/)
 {
 #if 0
   bool nav = conf.readEntry("hide-navigation", false);
@@ -333,6 +337,25 @@ void KalibrateGui::executeExtractor()
   }
 }
 
+/**
+ * Save the points found as a plain text list.
+ * Open up a file-dialog and save the points found to the files
+ * as a plain text-list, containing 2D→3D correspondences.
+ */ 
+void KalibrateGui::savePointList()
+{
+  QString file = KFileDialog::getSaveFileName(KUrl(), "text/plain", this,
+	i18n("Save List of Points"), KFileDialog::ConfirmOverwrite);
+  if (file.isEmpty()) return;
+
+  std::ofstream outs(qPrintable(file));
+  foreach(ImageNode img, images) {
+    if(img.active && img.grid.size()) {
+      outs << "# " << qPrintable(img.name) << "\n";
+      outs << img.grid << "\n\n";
+    }
+  }
+}
 
 /**
  * Add an optimizer to the GUI.

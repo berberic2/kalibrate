@@ -124,11 +124,24 @@ private:
  */
 inline std::ostream &operator<<(std::ostream &os, const Plate::Point &pt)
 {
-  os << "[(" <<  pt.image.x<< ", " << pt.image.y << "), ("
-     << pt.space.x << ", " << pt.space.y << ", " << pt.space.z << ")]";
+  os << "[ ( " <<  pt.image.x<< ", " << pt.image.y << " ), ( "
+     << pt.space.x << ", " << pt.space.y << ", " << pt.space.z << " ) ]";
   return os;
 }
 // @}
 
+/// @relates Plate @{
+/**
+ * output-operator for @a Plate.
+ */
+inline std::ostream &operator<<(std::ostream &os, const Plate &pl)
+{
+  foreach(Plate::Point i, pl.points) {
+    Plate::Point &p = i;
+    os << p << "\n";
+  }
+  return os;
+}
+// @}
 
 #endif
