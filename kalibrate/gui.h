@@ -43,7 +43,7 @@ public slots:
   virtual void extractorChanged(int i);
   virtual void optimizerChanged(int i);
   virtual void executeExtractor();
-
+  virtual void savePointList();
 protected:
   virtual void saveProperties(KConfigGroup &);
   virtual void readProperties(const KConfigGroup &);
