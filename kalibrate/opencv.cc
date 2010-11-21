@@ -149,24 +149,26 @@ bool OpenCVExtractor::operator() (const QImage &image, Plate &grid) const
   int h = image.height();
   int w = image.width();
 
-  // create and copy image → IplImage
-  cv::Ptr<IplImage> img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1);
-  for(int y=0; y<h; ++y)
-    for(int x=0; x<w; ++x)
-      img->imageData[y*img->widthStep+x] = qGray(image.pixel(x, y));
+  // create and copy image → Mat
+  cv::Mat img(h, w, CV_8UC1);
+  for(int y=0; y<h; ++y) {
+    uint8_t *ptr = img.ptr<uint8_t>(y);
+    for(int x=0; x<w; ++x) {
+      ptr[x] = qGray(image.pixel(x, y));
+      //img.at<uint8_t>(y, x) = qGray(image.pixel(x, y));
+    }
+  }
 
   // find chessboard
-  CvPoint2D32f points[theGui->width*theGui->height];
-  int corners = 0;
-
-  int r = cvFindChessboardCorners(img, cvSize(theGui->width, theGui->height),
-	points, &corners);
+  std::vector<cv::Point2f> points;
+  bool r = cv::findChessboardCorners(img,
+	cv::Size(theGui->width, theGui->height), points);
 
   // if nothing found, clean up and return
-  if (r == 0) throw 1;
+  if (!r) throw 1;
 
   // refine points
-  CvSize window, zero;
+  cv::Size window, zero;
   if (theGui->moreGroup->isHidden()) {
     window = cvSize(5, 5);
     zero = cvSize(1, 1);
@@ -174,12 +176,12 @@ bool OpenCVExtractor::operator() (const QImage &image, Plate &grid) const
     window = cvSize(theGui->window_w, theGui->window_h);
     zero = cvSize(theGui->zero_w, theGui->zero_h);
   }
-  cvFindCornerSubPix(img, points, corners, window, zero,
-	cvTermCriteria(CV_TERMCRIT_EPS|CV_TERMCRIT_ITER, 100, 0.001));
+  cv::cornerSubPix(img, points, window, zero,
+	cv::TermCriteria(CV_TERMCRIT_EPS|CV_TERMCRIT_ITER, 100, 0.0001));
 
   // copy grid to node
-  grid.points.resize(corners);
-  for(int i=0; i<corners; ++i) {
+  grid.points.resize(points.size());
+  for(unsigned int i=0; i<points.size(); ++i) {
     grid.points[i].image.set(points[i].x, points[i].y);
     grid.points[i].space.set(i%theGui->width * theGui->dist_w, 
 	  i/theGui->width * theGui->dist_h, 0.0);
