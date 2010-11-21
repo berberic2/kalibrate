@@ -91,7 +91,7 @@ inline ImageListModel::ImageListModel(QObject *parent) :
 inline ImageListModel::ImageListModel(const imageList *i, QObject *parent) : 
   QAbstractListModel(parent), theImages(i) {}
 
-inline int ImageListModel::rowCount(const QModelIndex &parent) const 
+inline int ImageListModel::rowCount(const QModelIndex &) const 
 {
   return theImages ? theImages->size() : 0;
 }
