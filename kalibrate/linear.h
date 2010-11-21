@@ -55,7 +55,7 @@ struct Point3
   double x, y, z;
 
   Point3() : x(0), y(0), z(0) {}
-  Point3(double a, double b, double c) : x(a), y(b), z(b) {}
+  Point3(double a, double b, double c) : x(a), y(b), z(c) {}
   void set(double a, double b, double c) { x = a; y = b; z = c; }
   bool isnan() const { return std::isnan(x); }
 };
