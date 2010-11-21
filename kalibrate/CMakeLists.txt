@@ -8,7 +8,6 @@ kde4_add_executable(kalibrate
   imagelist.cc
   imageviewer.cc
   gui.cc
-  opencv.cc
 )
 
 target_link_libraries(kalibrate
